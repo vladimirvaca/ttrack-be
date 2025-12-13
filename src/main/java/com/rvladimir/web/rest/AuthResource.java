@@ -6,10 +6,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Auth")
 @Controller("/auth")
-public class AuthResource {
+public final class AuthResource {
 
-    @Get(uri = "/", produces = "application/json")
-    public String index() {
+    @Get(produces = "application/json")
+    public String index()  {
         return "{\"message\": \"Hello World\"}";
     }
 }

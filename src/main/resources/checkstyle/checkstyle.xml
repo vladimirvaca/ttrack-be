@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- ============================================ -->
+    <!-- File and Header Checks                       -->
+    <!-- ============================================ -->
+
+    <!-- Ensure files end with a newline -->
+    <module name="NewlineAtEndOfFile">
+        <property name="lineSeparator" value="lf"/>
+    </module>
+
+    <!-- Check for tab characters -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- Line length check (must be at Checker level) -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://"/>
+    </module>
+
+    <!-- ============================================ -->
+    <!-- TreeWalker Checks                           -->
+    <!-- ============================================ -->
+
+    <module name="TreeWalker">
+        <property name="tabWidth" value="4"/>
+
+        <!-- ============================================ -->
+        <!-- Naming Conventions                          -->
+        <!-- ============================================ -->
+
+        <!-- Package names must be lowercase -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+
+        <!-- Type names must be PascalCase -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Method names must be camelCase -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Member names must be camelCase -->
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Parameter names must be camelCase -->
+        <module name="ParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Constant names must be UPPER_CASE -->
+        <module name="ConstantName">
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
+
+        <!-- Local variable names must be camelCase -->
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- Local final variable names must be camelCase -->
+        <module name="LocalFinalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+
+        <!-- ============================================ -->
+        <!-- Import Checks                              -->
+        <!-- ============================================ -->
+
+        <!-- Avoid wildcards in imports -->
+        <module name="AvoidStarImport"/>
+
+        <!-- Avoid redundant imports -->
+        <module name="RedundantImport"/>
+
+        <!-- Avoid unused imports -->
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true"/>
+        </module>
+
+        <!-- Import order -->
+        <module name="ImportOrder">
+            <property name="groups" value="com,io,jakarta,java,javax,org"/>
+            <property name="ordered" value="true"/>
+            <property name="separated" value="true"/>
+            <property name="option" value="top"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+        </module>
+
+        <!-- ============================================ -->
+        <!-- Size and Length Checks                     -->
+        <!-- ============================================ -->
+
+        <!-- Method length check -->
+        <module name="MethodLength">
+            <property name="max" value="150"/>
+            <property name="countEmpty" value="true"/>
+        </module>
+
+        <!-- Parameter number check -->
+        <module name="ParameterNumber">
+            <property name="max" value="7"/>
+            <property name="tokens" value="METHOD_DEF"/>
+        </module>
+
+        <!-- ============================================ -->
+        <!-- Whitespace Checks                          -->
+        <!-- ============================================ -->
+
+        <!-- Generic whitespace -->
+        <module name="GenericWhitespace"/>
+
+        <!-- Empty for initializer pad -->
+        <module name="EmptyForInitializerPad"/>
+
+        <!-- Empty for iterator pad -->
+        <module name="EmptyForIteratorPad"/>
+
+        <!-- Method param pad -->
+        <module name="MethodParamPad"/>
+
+        <!-- No whitespace after -->
+        <module name="NoWhitespaceAfter">
+            <property name="tokens" value="BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS"/>
+        </module>
+
+        <!-- No whitespace before -->
+        <module name="NoWhitespaceBefore"/>
+
+        <!-- Operator wrap -->
+        <module name="OperatorWrap">
+            <property name="option" value="eol"/>
+        </module>
+
+        <!-- Parentheses padding -->
+        <module name="ParenPad"/>
+
+        <!-- Type cast parentheses padding -->
+        <module name="TypecastParenPad"/>
+
+        <!-- Whitespace around -->
+        <module name="WhitespaceAround">
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+        </module>
+
+        <!-- ============================================ -->
+        <!-- Modifier Checks                            -->
+        <!-- ============================================ -->
+
+        <!-- Modifier order -->
+        <module name="ModifierOrder"/>
+
+        <!-- Redundant modifiers -->
+        <module name="RedundantModifier"/>
+
+        <!-- ============================================ -->
+        <!-- Block Checks                              -->
+        <!-- ============================================ -->
+
+        <!-- Avoid empty blocks -->
+        <module name="EmptyBlock">
+            <property name="option" value="text"/>
+        </module>
+
+        <!-- Empty catch block -->
+        <module name="EmptyCatchBlock">
+            <property name="exceptionVariableName" value="expected"/>
+        </module>
+
+        <!-- Left curly brace placement -->
+        <module name="LeftCurly">
+            <property name="option" value="eol"/>
+        </module>
+
+        <!-- Right curly brace placement -->
+        <module name="RightCurly">
+            <property name="option" value="alone"/>
+            <property name="tokens" value="LITERAL_TRY,LITERAL_CATCH,LITERAL_FINALLY,LITERAL_IF,LITERAL_ELSE,LITERAL_DO,LITERAL_WHILE,LITERAL_FOR,LITERAL_SWITCH,CLASS_DEF,METHOD_DEF,ENUM_DEF,INTERFACE_DEF,ANNOTATION_DEF,RECORD_DEF"/>
+        </module>
+
+        <!-- Need braces -->
+        <module name="NeedBraces"/>
+
+        <!-- ============================================ -->
+        <!-- Coding Problem Checks                      -->
+        <!-- ============================================ -->
+
+        <!-- Array trailing comma -->
+        <module name="ArrayTrailingComma"/>
+
+        <!-- Avoid double brace initialization -->
+        <module name="AvoidDoubleBraceInitialization"/>
+
+        <!-- Avoid inline conditionals -->
+        <module name="AvoidInlineConditionals"/>
+
+        <!-- Covariant equals -->
+        <module name="CovariantEquals"/>
+
+        <!-- Empty statement -->
+        <module name="EmptyStatement"/>
+
+        <!-- Equals avoid null -->
+        <module name="EqualsAvoidNull"/>
+
+        <!-- Equals hash code -->
+        <module name="EqualsHashCode"/>
+
+        <!-- Hidden field -->
+        <module name="HiddenField">
+            <property name="ignoreConstructorParameter" value="true"/>
+            <property name="ignoreSetter" value="true"/>
+            <property name="ignoreAbstractMethods" value="true"/>
+        </module>
+
+        <!-- Inner assignment -->
+        <module name="InnerAssignment"/>
+
+        <!-- Avoid magic numbers -->
+        <module name="MagicNumber">
+            <property name="ignoreNumbers" value="-1,0,1,2"/>
+            <property name="ignoreHashCodeMethod" value="true"/>
+        </module>
+
+        <!-- Missing switch default -->
+        <module name="MissingSwitchDefault"/>
+
+        <!-- Multiple string literals -->
+        <module name="MultipleStringLiterals">
+            <property name="ignoreOccurrenceContext" value="ANNOTATION"/>
+        </module>
+
+        <!-- Multiple variable declarations -->
+        <module name="MultipleVariableDeclarations"/>
+
+        <!-- No clone -->
+        <module name="NoClone"/>
+
+        <!-- No finalizer -->
+        <module name="NoFinalizer"/>
+
+        <!-- One statement per line -->
+        <module name="OneStatementPerLine"/>
+
+        <!-- Over-complicated boolean expression -->
+        <module name="OverloadMethodsDeclarationOrder"/>
+
+        <!-- Package declaration -->
+        <module name="PackageDeclaration"/>
+
+        <!-- Parameter assignment -->
+        <module name="ParameterAssignment"/>
+
+        <!-- Simplify boolean expression -->
+        <module name="SimplifyBooleanExpression"/>
+
+        <!-- Simplify boolean return -->
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- String literal equality -->
+        <module name="StringLiteralEquality"/>
+
+        <!-- ============================================ -->
+        <!-- Class Design Checks                        -->
+        <!-- ============================================ -->
+
+        <!-- Avoid static access -->
+        <module name="AvoidStaticImport"/>
+
+        <!-- Design for extension -->
+        <module name="DesignForExtension">
+            <property name="ignoredAnnotations" value="Override,Test"/>
+        </module>
+
+        <!-- Final class -->
+        <module name="FinalClass"/>
+
+        <!-- Hide utility class constructor -->
+        <module name="HideUtilityClassConstructor"/>
+
+        <!-- Interface is type -->
+        <module name="InterfaceIsType"/>
+
+        <!-- Mutable exception -->
+        <module name="MutableException"/>
+
+        <!-- One top level class -->
+        <module name="OneTopLevelClass"/>
+
+        <!-- Visible for testing -->
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true"/>
+            <property name="packageAllowed" value="true"/>
+        </module>
+
+        <!-- ============================================ -->
+        <!-- Miscellaneous Checks                       -->
+        <!-- ============================================ -->
+
+        <!-- Array type style -->
+        <module name="ArrayTypeStyle"/>
+
+        <!-- Avoid escaped unicode characters -->
+        <module name="AvoidEscapedUnicodeCharacters">
+            <property name="allowEscapesForControlCharacters" value="true"/>
+            <property name="allowByTailComment" value="true"/>
+        </module>
+
+        <!-- Comments indentation -->
+        <module name="CommentsIndentation"/>
+
+        <!-- Indentation -->
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="throwsIndent" value="4"/>
+            <property name="lineWrappingIndentation" value="4"/>
+        </module>
+
+        <!-- Trailing comment -->
+        <module name="TrailingComment"/>
+
+        <!-- Upper ELL -->
+        <module name="UpperEll"/>
+
+    </module>
+</module>
+

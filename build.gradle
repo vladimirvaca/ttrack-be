@@ -2,6 +2,7 @@ plugins {
     id("io.micronaut.application") version "4.6.1"
     id("com.gradleup.shadow") version "8.3.9"
     id("io.micronaut.aot") version "4.6.1"
+    id("checkstyle")
 }
 
 version = "0.1"
@@ -9,6 +10,16 @@ group = "com.rvladimir"
 
 repositories {
     mavenCentral()
+}
+
+checkstyle {
+    toolVersion = '10.12.7'
+    configFile = rootProject.file('src/main/resources/checkstyle/checkstyle.xml')
+    ignoreFailures = false
+}
+
+configurations.checkstyle {
+    exclude group: 'com.google.collections', module: 'google-collections'
 }
 
 dependencies {
