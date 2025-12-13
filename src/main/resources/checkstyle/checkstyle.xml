@@ -282,11 +282,6 @@
         <!-- Avoid static access -->
         <module name="AvoidStaticImport"/>
 
-        <!-- Design for extension -->
-        <module name="DesignForExtension">
-            <property name="ignoredAnnotations" value="Override,Test"/>
-        </module>
-
         <!-- Final class -->
         <module name="FinalClass"/>
 
