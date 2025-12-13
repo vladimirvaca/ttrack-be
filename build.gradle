@@ -78,4 +78,19 @@ tasks.named("dockerfileNative") {
     jdkVersion = "21"
 }
 
+// Install pre-commit git hook
+tasks.register("installPreCommitGitHook") {
+    description = "Installs the pre-commit git hook"
+    group = "build setup"
 
+    doLast {
+        def targetFile = file("$rootDir/.git/hooks/pre-commit")
+        targetFile.text = file("$rootDir/pre-commit").text
+        targetFile.setExecutable(true, false)
+    }
+}
+
+// Make build task depend on hook installation
+tasks.named("compileJava") {
+    dependsOn("installPreCommitGitHook")
+}
