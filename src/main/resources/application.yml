@@ -10,3 +10,28 @@ micronaut:
       swagger-ui:
         mapping: "/swagger-ui/**"
         paths: "classpath:META-INF/swagger/views/swagger-ui"
+  security:
+    enabled: true
+    token:
+      jwt:
+        enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: "PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"
+    intercept-url-map:
+      - pattern: /swagger/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /auth
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /**
+        access:
+          - isAuthenticated()
