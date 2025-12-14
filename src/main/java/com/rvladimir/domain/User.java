@@ -1,14 +1,20 @@
 package com.rvladimir.domain;
 
+import com.rvladimir.constants.TtrackConstants;
+
 import io.micronaut.serde.annotation.Serdeable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,30 +22,39 @@ import lombok.NoArgsConstructor;
 
 @Serdeable
 @Entity
-@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users", schema = TtrackConstants.TTRACK_SCHEMA)
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String name;
 
     @NotNull
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false)
+    private String lastname;
+
+    @NotNull
+    @Column(name = "date_birth", nullable = false)
+    private LocalDate dateBirth;
+
+    @NotNull
+    @Column(nullable = false, unique = true)
     private String email;
 
     @NotNull
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
     @NotNull
-    @Column(name = "role", nullable = false)
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     public enum Role {
