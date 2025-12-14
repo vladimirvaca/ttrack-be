@@ -35,3 +35,23 @@ micronaut:
       - pattern: /**
         access:
           - isAuthenticated()
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/ttracker-db
+    driverClassName: org.postgresql.Driver
+    username: ttracker-user
+    password: ttracker-password
+    dialect: POSTGRES
+    autoCommit: false
+    connectionTimeout: 30000
+    minimumIdle: 5
+    maximumPoolSize: 10
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+        show_sql: true
