@@ -3,9 +3,9 @@ services:
     image: postgres:15.3-alpine
     restart: always
     environment:
-      - POSTGRES_DB=ttracker-db
-      - POSTGRES_USER=ttracker-user
-      - POSTGRES_PASSWORD=ttracker-password
+      - POSTGRES_DB=ttrack-db
+      - POSTGRES_USER=ttrack-user
+      - POSTGRES_PASSWORD=ttrack-password
     ports:
       - '5432:5432'
     volumes:
