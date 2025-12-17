@@ -28,8 +28,8 @@ micronaut:
         httpMethod: GET
         access:
           - isAnonymous()
-      - pattern: /auth
-        httpMethod: GET
+      - pattern: /auth/login
+        httpMethod: POST
         access:
           - isAnonymous()
       - pattern: /user/create
