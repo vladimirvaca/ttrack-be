@@ -11,12 +11,15 @@ import com.rvladimir.web.error.ValidationException;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 @Singleton
 @Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private static final int BCRYPT_COST = 12;
 
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -30,6 +33,9 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = userMapper.toEntity(createUserDTO);
+        // Hash the user's password before persisting (BCrypt with a cost factor)
+        String hashedPassword = BCrypt.hashpw(createUserDTO.getPassword(), BCrypt.gensalt(BCRYPT_COST));
+        user.setPassword(hashedPassword);
         User savedUser = userRepository.save(user);
         return userMapper.toDto(savedUser);
     }
