@@ -11,6 +11,8 @@ import io.micronaut.http.annotation.Post;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "User")
@@ -27,7 +29,7 @@ public class UserResource {
     @ApiResponse(responseCode = "201", description = "User created successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid user data.")
     @Post(uri = "/create", produces = "application/json", consumes = "application/json")
-    public HttpResponse<UserDTO> createUser(@Body CreateUserDTO createUserDto) {
+    public HttpResponse<UserDTO> createUser(@Body @Valid CreateUserDTO createUserDto) {
         log.info("Creating user with username: {}", createUserDto.getEmail());
         UserDTO userDTO = userService.create(createUserDto);
         return HttpResponse.created(userDTO);

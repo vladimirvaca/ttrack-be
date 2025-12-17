@@ -6,6 +6,7 @@ import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -27,11 +28,11 @@ public class CreateUserDTO {
 
     @NotNull
     @NotEmpty
+    @NotBlank
     @Schema(description = "The user's lastname", example = "Stark")
     private String lastname;
 
     @NotNull
-    @NotEmpty
     @Schema(description = "The user's date of birth", example = "1991-01-029")
     private LocalDate dateBirth;
 
@@ -43,11 +44,11 @@ public class CreateUserDTO {
 
     @NotNull
     @NotEmpty
+    @NotBlank
     @Schema(description = "The user's password", example = "12345")
     private String password;
 
     @NotNull
-    @NotEmpty
     @Schema(description = "The user's password", example = "ADMIN")
     private User.Role role;
 }
