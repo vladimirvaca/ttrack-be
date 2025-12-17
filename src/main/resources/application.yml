@@ -32,6 +32,10 @@ micronaut:
         httpMethod: GET
         access:
           - isAnonymous()
+      - pattern: /user/create
+        httpMethod: POST
+        access:
+          - isAnonymous()
       - pattern: /**
         access:
           - isAuthenticated()
@@ -56,8 +60,11 @@ flyway:
 
 jpa:
   default:
+    entity-scan:
+      packages: 'com.rvladimir.domain'
     properties:
       hibernate:
         hbm2ddl:
           auto: validate
         show_sql: true
+        format_sql: true
