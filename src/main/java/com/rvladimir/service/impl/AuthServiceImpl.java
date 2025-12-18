@@ -13,7 +13,9 @@ import io.micronaut.security.token.generator.TokenGenerator;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 
+import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final TokenGenerator tokenGenerator;
     private static final String INVALID_CREDENTIALS_MSG = "Invalid email or password.";
+    private static final String USER_NOT_FOUND_MSG = "User not found.";
 
     public AuthServiceImpl(UserRepository userRepository, TokenGenerator tokenGenerator) {
         this.userRepository = userRepository;
@@ -36,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
     public JwtDTO login(LoginDTO loginDTO) {
         Optional<User> userOpt = userRepository.findByEmail(loginDTO.getEmail());
         if (userOpt.isEmpty()) {
-            throw new HttpStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MSG);
+            throw new HttpStatusException(HttpStatus.UNAUTHORIZED, USER_NOT_FOUND_MSG);
         }
 
         User user = userOpt.get();
@@ -46,9 +49,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", user.getEmail());
+        Instant now = Instant.now();
+        claims.put("sub", user.getEmail());
+        claims.put("iat", now.getEpochSecond());
+
         claims.put("userId", user.getId());
-        claims.put("role", user.getRole().name());
+        claims.put("roles", List.of(user.getRole().name()));
 
         String token = tokenGenerator.generateToken(claims)
             .orElseThrow(() -> new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate token"));

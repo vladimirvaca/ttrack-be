@@ -7,6 +7,7 @@ import com.rvladimir.service.dto.UserDTO;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,11 +31,16 @@ public class UserResource {
     @ApiResponse(responseCode = "201", description = "User created successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid user data.")
     @Operation(summary = "Create a new user", description = "Creates a new user in the system.")
-    @Post(uri = "/create", produces = "application/json", consumes = "application/json")
+    @Post(uri = "/create")
     public HttpResponse<UserDTO> createUser(@Body @Valid CreateUserDTO createUserDto) {
         log.info("Creating user with username: {}", createUserDto.getEmail());
         UserDTO userDTO = userService.create(createUserDto);
         return HttpResponse.created(userDTO);
+    }
+
+    @Get()
+    public HttpResponse<String> getUser() {
+        return HttpResponse.ok().body("{\"message\": \"All good!\"}");
     }
 
 }
