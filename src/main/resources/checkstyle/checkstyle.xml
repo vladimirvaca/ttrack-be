@@ -274,8 +274,12 @@
         <!-- Class Design Checks                        -->
         <!-- ============================================ -->
 
-        <!-- Avoid static access -->
-        <module name="AvoidStaticImport"/>
+        <!-- Avoid static access (allow for test assertions) -->
+        <module name="AvoidStaticImport">
+            <property name="excludes" value="org.assertj.core.api.Assertions.*"/>
+            <property name="excludes" value="org.mockito.Mockito.*"/>
+            <property name="excludes" value="org.mockito.ArgumentMatchers.*"/>
+        </module>
 
         <!-- Final class -->
         <module name="FinalClass"/>

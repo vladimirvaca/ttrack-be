@@ -1,0 +1,62 @@
+micronaut:
+  application:
+    name: ttrack-be
+  security:
+    enabled: true
+    token:
+      jwt:
+        enabled: true
+        generator:
+          access-token:
+            expiration: 3600
+        signatures:
+          secret:
+            generator:
+              secret: "TestSecret!!TestSecret!!TestSecret!!TestSecret!!"
+    intercept-url-map:
+      - pattern: /swagger/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+      - pattern: /auth/login
+        httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /user/create
+        httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /**
+        access:
+          - isAuthenticated()
+
+# Database configuration will be handled by Testcontainers
+datasources:
+  default:
+    driverClassName: org.postgresql.Driver
+    dialect: POSTGRES
+    autoCommit: false
+    connectionTimeout: 30000
+    minimumIdle: 1
+    maximumPoolSize: 3
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      locations: classpath:db/migration
+
+jpa:
+  default:
+    entity-scan:
+      packages: 'com.rvladimir.domain'
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: validate
+        show_sql: true
+        format_sql: true
