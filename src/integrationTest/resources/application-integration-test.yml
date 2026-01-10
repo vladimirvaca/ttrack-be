@@ -1,0 +1,30 @@
+micronaut:
+  application:
+    name: ttrack-be
+
+# Database configuration will be handled by Testcontainers
+datasources:
+  default:
+    driverClassName: org.postgresql.Driver
+    dialect: POSTGRES
+    autoCommit: false
+    connectionTimeout: 30000
+    minimumIdle: 1
+    maximumPoolSize: 3
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      locations: classpath:db/migration
+
+jpa:
+  default:
+    entity-scan:
+      packages: 'com.rvladimir.domain'
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: validate
+        show_sql: true
+        format_sql: true

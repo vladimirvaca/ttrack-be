@@ -203,12 +203,18 @@ git commit --no-verify -m "commit message"
 ./gradlew build          # Build the project
 ./gradlew run            # Run the application
 ./gradlew clean          # Clean build artifacts
-./gradlew test           # Run tests
+```
+
+### Testing
+```bash
+./gradlew test           # Run unit tests only (fast, no Testcontainers)
+./gradlew integrationTest # Run integration tests (database layer)
+./gradlew e2eTest        # Run end-to-end tests (full application context)
+./gradlew check          # Run all tests + checkstyle
 ```
 
 ### Code Quality
 ```bash
-./gradlew check          # Run all checks (tests + checkstyle)
 ./gradlew checkstyleMain # Run checkstyle on main source
 ./gradlew checkstyleTest # Run checkstyle on test source
 ```

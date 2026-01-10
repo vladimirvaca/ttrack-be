@@ -22,6 +22,41 @@ configurations.checkstyle {
     exclude group: 'com.google.collections', module: 'google-collections'
 }
 
+// Source sets for different test types
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/integrationTest/java'
+        }
+        resources {
+            srcDir 'src/integrationTest/resources'
+        }
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += output + compileClasspath
+    }
+
+    e2eTest {
+        java {
+            srcDir 'src/e2eTest/java'
+        }
+        resources {
+            srcDir 'src/e2eTest/resources'
+        }
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+// Configure test configurations to extend from test
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+    integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+    e2eTestImplementation.extendsFrom testImplementation
+    e2eTestRuntimeOnly.extendsFrom testRuntimeOnly
+    e2eTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+}
+
 dependencies {
     annotationProcessor("io.micronaut:micronaut-http-validation")
     annotationProcessor("io.micronaut.openapi:micronaut-openapi")
@@ -50,10 +85,11 @@ dependencies {
     runtimeOnly("org.yaml:snakeyaml")
     // Password hashing library (BCrypt)
     implementation("org.mindrot:jbcrypt:0.4")
+
+    // Unit test dependencies
+    testAnnotationProcessor("io.micronaut:micronaut-inject-java")
     testImplementation("io.micronaut:micronaut-http-client")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // Testing dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
@@ -61,11 +97,29 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
     testImplementation("org.assertj:assertj-core:3.25.3")
 
-    // Testcontainers for integration tests
-    testImplementation("org.testcontainers:testcontainers:2.0.2")
-    testImplementation("org.testcontainers:postgresql:1.20.4")
-    testImplementation("org.testcontainers:junit-jupiter:1.20.4")
-    testImplementation("io.micronaut.testresources:micronaut-test-resources-client")
+    // Integration test dependencies
+    integrationTestAnnotationProcessor("io.micronaut:micronaut-inject-java")
+    integrationTestImplementation("io.micronaut:micronaut-http-client")
+    integrationTestImplementation("org.junit.jupiter:junit-jupiter-api")
+    integrationTestImplementation("org.junit.jupiter:junit-jupiter-params")
+    integrationTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    integrationTestImplementation("org.assertj:assertj-core:3.25.3")
+    integrationTestImplementation("org.testcontainers:testcontainers:2.0.2")
+    integrationTestImplementation("org.testcontainers:postgresql:1.20.4")
+    integrationTestImplementation("org.testcontainers:junit-jupiter:1.20.4")
+    integrationTestImplementation("io.micronaut.testresources:micronaut-test-resources-client")
+
+    // E2E test dependencies
+    e2eTestAnnotationProcessor("io.micronaut:micronaut-inject-java")
+    e2eTestImplementation("io.micronaut:micronaut-http-client")
+    e2eTestImplementation("org.junit.jupiter:junit-jupiter-api")
+    e2eTestImplementation("org.junit.jupiter:junit-jupiter-params")
+    e2eTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    e2eTestImplementation("org.assertj:assertj-core:3.25.3")
+    e2eTestImplementation("org.testcontainers:testcontainers:2.0.2")
+    e2eTestImplementation("org.testcontainers:postgresql:1.20.4")
+    e2eTestImplementation("org.testcontainers:junit-jupiter:1.20.4")
+    e2eTestImplementation("io.micronaut.testresources:micronaut-test-resources-client")
 }
 
 
@@ -119,4 +173,50 @@ tasks.register("installPreCommitGitHook") {
 
 tasks.named("compileJava") {
     dependsOn("installPreCommitGitHook")
+}
+
+// Configure duplicate handling for resource processing
+tasks.named('processIntegrationTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named('processE2eTestResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Task for integration tests
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// Task for E2E tests
+tasks.register('e2eTest', Test) {
+    description = 'Runs end-to-end tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.e2eTest.output.classesDirs
+    classpath = sourceSets.e2eTest.runtimeClasspath
+    shouldRunAfter integrationTest
+
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// Make check depend on all test types
+tasks.named('check') {
+    dependsOn integrationTest, e2eTest
 }
