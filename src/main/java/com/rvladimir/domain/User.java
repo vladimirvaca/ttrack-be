@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users", schema = TtrackConstants.TTRACK_SCHEMA)
+@Table(name = "user", schema = TtrackConstants.TTRACK_SCHEMA)
 public class User {
 
     @Id

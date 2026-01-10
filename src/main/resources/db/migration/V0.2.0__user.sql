@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS ttrack.users (
+CREATE TABLE IF NOT EXISTS ttrack.user (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     lastname VARCHAR NOT NULL,
