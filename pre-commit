@@ -2,6 +2,7 @@
 
 echo "Running git pre-commit hook"
 
+# This include unit tests
 ./gradlew check
 
 RESULT=$?

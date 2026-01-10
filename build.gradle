@@ -171,8 +171,19 @@ tasks.register("installPreCommitGitHook") {
     }
 }
 
+tasks.register("installPrePushGitHook") {
+    description = "Installs the pre-push git hook"
+    group = "build setup"
+
+    doLast {
+        def targetFile = file("$rootDir/.git/hooks/pre-push")
+        targetFile.text = file("$rootDir/pre-push").text
+        targetFile.setExecutable(true, false)
+    }
+}
+
 tasks.named("compileJava") {
-    dependsOn("installPreCommitGitHook")
+    dependsOn("installPreCommitGitHook", "installPrePushGitHook")
 }
 
 // Configure duplicate handling for resource processing
@@ -214,9 +225,4 @@ tasks.register('e2eTest', Test) {
         events "passed", "skipped", "failed"
         exceptionFormat "full"
     }
-}
-
-// Make check depend on all test types
-tasks.named('check') {
-    dependsOn integrationTest, e2eTest
 }

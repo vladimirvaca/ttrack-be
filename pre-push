@@ -1,0 +1,12 @@
+#!/bin/sh
+
+echo "Running git pre-push hook"
+
+# This include unit tests, integration tests and e2e tests
+./gradlew check integrationTest e2eTest
+
+RESULT=$?
+
+# return 1 exit code if running checks fails
+[ $RESULT -ne 0 ] && exit 1
+exit 0
