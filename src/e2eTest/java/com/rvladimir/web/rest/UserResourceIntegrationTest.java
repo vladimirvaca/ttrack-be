@@ -69,8 +69,6 @@ class UserResourceIntegrationTest implements TestPropertyProvider {
     private static final String TEST_ADMIN_PASSWORD = "adminPassword";
     private static final String BCRYPT_HASH_PREFIX = "$2a$";
     private static final String ENDPOINT_USER_CREATE = "/user/create";
-    private static final String ENDPOINT_USER_GET = "/user";
-    private static final String MESSAGE_ALL_GOOD = "All good!";
     private static final int BIRTH_YEAR_1980 = 1980;
     private static final int BIRTH_YEAR_1985 = 1985;
     private static final int BIRTH_YEAR_1990 = 1990;
