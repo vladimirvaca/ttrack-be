@@ -30,6 +30,9 @@ micronaut:
         httpMethod: POST
         access:
           - isAnonymous()
+      - pattern: /training-session/**
+        access:
+          - isAnonymous()
       - pattern: /**
         access:
           - isAuthenticated()

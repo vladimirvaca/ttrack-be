@@ -3,6 +3,7 @@ package com.rvladimir.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.rvladimir.domain.User;
+import com.rvladimir.test.PostgresTestContainer;
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
@@ -71,20 +72,13 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
     private static final int BIRTH_DAY_25 = 25;
 
     @Container
-    @SuppressWarnings("resource")
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-        .withDatabaseName("testdb")
-        .withUsername("testuser")
-        .withPassword("testpass");
+    static PostgreSQLContainer<?> postgres = PostgresTestContainer.getInstance();
 
     @Inject
     UserRepository userRepository;
 
     @Override
     public Map<String, String> getProperties() {
-        if (!postgres.isRunning()) {
-            postgres.start();
-        }
         return Map.of(
             "datasources.default.url", postgres.getJdbcUrl(),
             "datasources.default.username", postgres.getUsername(),

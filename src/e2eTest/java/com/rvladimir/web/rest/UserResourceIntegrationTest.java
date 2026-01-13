@@ -7,6 +7,7 @@ import com.rvladimir.domain.User;
 import com.rvladimir.repository.UserRepository;
 import com.rvladimir.service.dto.CreateUserDTO;
 import com.rvladimir.service.dto.UserDTO;
+import com.rvladimir.test.PostgresTestContainer;
 
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
@@ -84,11 +85,7 @@ class UserResourceIntegrationTest implements TestPropertyProvider {
     private static final long EXPECTED_USER_COUNT_THREE = 3L;
 
     @Container
-    @SuppressWarnings("resource")
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-        .withDatabaseName("testdb")
-        .withUsername("testuser")
-        .withPassword("testpass");
+    static PostgreSQLContainer<?> postgres = PostgresTestContainer.getInstance();
 
     @Inject
     @Client("/")
@@ -99,9 +96,6 @@ class UserResourceIntegrationTest implements TestPropertyProvider {
 
     @Override
     public Map<String, String> getProperties() {
-        if (!postgres.isRunning()) {
-            postgres.start();
-        }
         return Map.of(
             "datasources.default.url", postgres.getJdbcUrl(),
             "datasources.default.username", postgres.getUsername(),
