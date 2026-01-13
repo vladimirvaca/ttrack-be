@@ -1,10 +1,8 @@
 package com.rvladimir.test;
 
-import com.rvladimir.domain.TrainingSession;
 import com.rvladimir.domain.User;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Factory class for creating test data objects.
@@ -47,40 +45,6 @@ public final class TestDataFactory {
             email,
             DEFAULT_USER_PASSWORD,
             role
-        );
-    }
-
-    /**
-     * Creates a training session with the specified user and status.
-     * @param user   the user associated with the training session
-     * @param status the training session status
-     * @return a new TrainingSession instance
-     */
-    public static TrainingSession createTrainingSession(User user, TrainingSession.Status status) {
-        return createTrainingSession(user, status, null, null);
-    }
-
-    /**
-     * Creates a training session with all specified values.
-     * @param user        the user associated with the training session
-     * @param status      the training session status
-     * @param name        the training session name (can be null)
-     * @param description the training session description (can be null)
-     * @return a new TrainingSession instance
-     */
-    public static TrainingSession createTrainingSession(
-        User user,
-        TrainingSession.Status status,
-        String name,
-        String description
-    ) {
-        return new TrainingSession(
-            null,
-            name,
-            description,
-            status,
-            user,
-            LocalDateTime.now()
         );
     }
 }
