@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS ttrack.session_exercise (
+    id BIGSERIAL PRIMARY KEY,
+    rounds INTEGER,
+    sets INTEGER,
+    repetitions INTEGER,
+    sprints INTEGER,
+    time TIME,
+    weight FLOAT,
+    distance FLOAT,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    rest_time INTEGER NOT NULL,
+    status VARCHAR NOT NULL,
+    "order" INTEGER NOT NULL,
+    exercise_id BIGINT NOT NULL,
+    training_session_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    unit_of_measurement VARCHAR(16),
+    CONSTRAINT fk_session_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES ttrack.exercise(id),
+    CONSTRAINT fk_session_exercise_training_session FOREIGN KEY (training_session_id) REFERENCES ttrack.training_session(id)
+);
