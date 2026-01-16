@@ -30,7 +30,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
 
     private static final String TEST_USER_EMAIL = "john.doe@example.com";
-    private static final String TEST_USER_PASSWORD = "hashedPassword";
     private static final String TEST_SESSION_NAME = "Morning Workout";
     private static final String TEST_SESSION_DESCRIPTION = "A quick morning workout routine";
     private static final String TEST_SESSION_NAME_EVENING = "Evening Workout";
@@ -74,7 +73,7 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
     @Test
     void testSaveTrainingSession() {
         // Given
-        User user = createAndSaveUser(TEST_USER_EMAIL);
+        User user = createAndSaveUser();
 
         TrainingSession trainingSession = new TrainingSession(
             null,
@@ -100,7 +99,7 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
     @Test
     void testFindById() {
         // Given
-        User user = createAndSaveUser(TEST_USER_EMAIL);
+        User user = createAndSaveUser();
 
         TrainingSession trainingSession = new TrainingSession(
             null,
@@ -135,7 +134,7 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
     @Test
     void testSaveMultipleTrainingSessions() {
         // Given
-        User user = createAndSaveUser(TEST_USER_EMAIL);
+        User user = createAndSaveUser();
 
         TrainingSession trainingSession1 = new TrainingSession(
             null,
@@ -167,7 +166,7 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
     @Test
     void testUpdateTrainingSession() {
         // Given
-        User user = createAndSaveUser(TEST_USER_EMAIL);
+        User user = createAndSaveUser();
 
         TrainingSession trainingSession = new TrainingSession(
             null,
@@ -200,7 +199,7 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
     @Test
     void testDeleteTrainingSession() {
         // Given
-        User user = createAndSaveUser(TEST_USER_EMAIL);
+        User user = createAndSaveUser();
 
         TrainingSession trainingSession = new TrainingSession(
             null,
@@ -224,7 +223,7 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
     @Test
     void testSaveTrainingSessionWithNullNameAndDescription() {
         // Given
-        User user = createAndSaveUser(TEST_USER_EMAIL);
+        User user = createAndSaveUser();
 
         TrainingSession trainingSession = new TrainingSession(
             null,
@@ -245,7 +244,8 @@ class TrainingSessionRepositoryIntegrationTest implements TestPropertyProvider {
         assertThat(savedTrainingSession.getStatus()).isEqualTo(TrainingSession.Status.IS_TEMPLATE);
     }
 
-    private User createAndSaveUser(String email) {
-        return userRepository.save(TestDataFactory.createUser(email));
+    private User createAndSaveUser() {
+        return userRepository
+            .save(TestDataFactory.createUser(TrainingSessionRepositoryIntegrationTest.TEST_USER_EMAIL));
     }
 }

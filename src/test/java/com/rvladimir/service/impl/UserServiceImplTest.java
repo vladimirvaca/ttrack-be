@@ -82,6 +82,7 @@ class UserServiceImplTest {
         );
 
         userDTO = new UserDTO(
+            USER_ID_1,
             TEST_NAME,
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
@@ -198,6 +199,7 @@ class UserServiceImplTest {
         );
 
         UserDTO adminUserDTOResult = new UserDTO(
+            USER_ID_2,
             TEST_ADMIN,
             TEST_USER,
             LocalDate.of(BIRTH_YEAR_1985, 1, 1),

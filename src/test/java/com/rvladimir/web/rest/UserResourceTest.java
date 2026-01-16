@@ -44,11 +44,10 @@ class UserResourceTest {
     private static final String VALIDATION_FIELD = "email";
     private static final String VALIDATION_CODE = "DUPLICATE";
     private static final String ENDPOINT_USER_CREATE = "/user/create";
-    private static final String ENDPOINT_USER_GET = "/user";
-    private static final String MESSAGE_ALL_GOOD = "All good!";
     private static final int BIRTH_YEAR = 1990;
     private static final int BIRTH_MONTH = 5;
     private static final int BIRTH_DAY = 15;
+    private static final long USER_ID_1 = 1L;
 
     @Inject
     @Client("/")
@@ -75,6 +74,7 @@ class UserResourceTest {
         );
 
         UserDTO userDTO = new UserDTO(
+            USER_ID_1,
             TEST_NAME,
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),

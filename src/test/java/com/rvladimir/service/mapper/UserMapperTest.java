@@ -94,6 +94,7 @@ class UserMapperTest {
     void testToEntityFromUserDto() {
         // Given
         UserDTO userDTO = new UserDTO(
+            USER_ID_1,
             TEST_NAME_JANE,
             TEST_LASTNAME_SMITH,
             LocalDate.of(BIRTH_YEAR_1985, BIRTH_MONTH_10, BIRTH_DAY_20),

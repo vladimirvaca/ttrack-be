@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JwtDTO {
-
     @Schema(description = "The JWT token")
     private String token;
 }
