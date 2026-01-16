@@ -33,6 +33,9 @@ micronaut:
       - pattern: /training-session/**
         access:
           - isAnonymous()
+      - pattern: /exercise/**
+        access:
+          - isAnonymous()
       - pattern: /**
         access:
           - isAuthenticated()
