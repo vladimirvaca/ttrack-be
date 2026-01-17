@@ -76,8 +76,8 @@ public class SessionExercise {
     private Status status;
 
     @NotNull
-    @Column(name = "order", nullable = false)
-    private Integer order;
+    @Column(name = "exercise_order", nullable = false)
+    private Integer exerciseOrder;
 
     @NotNull
     @ManyToOne

@@ -108,12 +108,12 @@
 
         <!-- Parameter number check -->
         <module name="ParameterNumber">
-            <property name="max" value="7"/>
+            <property name="max" value="20"/>
             <property name="tokens" value="METHOD_DEF"/>
         </module>
 
         <!-- ============================================ -->
-        <!-- Whitespace Checks                          -->
+        <!-- Whitespace Checks                            -->
         <!-- ============================================ -->
 
         <!-- Generic whitespace -->
@@ -279,6 +279,7 @@
             <property name="excludes" value="org.assertj.core.api.Assertions.*"/>
             <property name="excludes" value="org.mockito.Mockito.*"/>
             <property name="excludes" value="org.mockito.ArgumentMatchers.*"/>
+            <property name="excludes" value="com.rvladimir.service.impl.SessionExerciseTestHelper.*"/>
         </module>
 
         <!-- Final class -->

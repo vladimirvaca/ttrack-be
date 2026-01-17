@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS ttrack.session_exercise (
     end_time TIMESTAMP NOT NULL,
     rest_time INTEGER NOT NULL,
     status VARCHAR NOT NULL,
-    "order" INTEGER NOT NULL,
+    exercise_order INTEGER NOT NULL,
     exercise_id BIGINT NOT NULL,
     training_session_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -18,15 +18,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import lombok.AllArgsConstructor;
+
 @Controller("/exercise")
 @Tag(name = "Exercise")
+@AllArgsConstructor
 public class ExerciseResource {
 
     private final ExerciseService exerciseService;
-
-    public ExerciseResource(ExerciseService exerciseService) {
-        this.exerciseService = exerciseService;
-    }
 
     @Post
     @Operation(summary = "Create a new exercise", description = "Creates a new exercise with the provided details")

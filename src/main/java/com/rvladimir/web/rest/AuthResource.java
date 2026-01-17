@@ -14,15 +14,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import lombok.AllArgsConstructor;
+
 @Tag(name = "Auth")
 @Controller("/auth")
+@AllArgsConstructor
 public class AuthResource {
 
     private final AuthService authService;
-
-    public AuthResource(AuthService authService) {
-        this.authService = authService;
-    }
 
     @ApiResponse(responseCode = "200", description = "Successful login.")
     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials.")

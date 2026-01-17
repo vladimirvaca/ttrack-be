@@ -13,6 +13,7 @@ Welcome to the TTrack Backend project! This document provides guidelines and bes
 - **Keep methods short and focused** (preferably under 150 lines).
 - **Limit method parameters** to a maximum of 7.
 - **No wildcard imports**; organize imports by groups.
+- **Use lombok to avoid boilerplate code** where applicable.
 
 ## Code Style & Checkstyle
 

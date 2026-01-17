@@ -14,18 +14,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Training Session")
 @Controller("/training-session")
 @Slf4j
+@AllArgsConstructor
 public class TrainingSessionResource {
 
     private final TrainingSessionService trainingSessionService;
-
-    public TrainingSessionResource(TrainingSessionService trainingSessionService) {
-        this.trainingSessionService = trainingSessionService;
-    }
 
     @ApiResponse(responseCode = "201", description = "Training session created successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid training session data.")

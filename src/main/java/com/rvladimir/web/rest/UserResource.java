@@ -15,18 +15,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "User")
 @Controller("/user")
 @Slf4j
+@AllArgsConstructor
 public class UserResource {
 
     private final UserService userService;
-
-    public UserResource(UserService userService) {
-        this.userService = userService;
-    }
 
     @ApiResponse(responseCode = "201", description = "User created successfully.")
     @ApiResponse(responseCode = "400", description = "Invalid user data.")
