@@ -28,6 +28,8 @@ public class AuthServiceImpl implements AuthService {
     private final TokenGenerator tokenGenerator;
     private static final String INVALID_CREDENTIALS_MSG = "Invalid email or password.";
     private static final String USER_NOT_FOUND_MSG = "User not found.";
+    private static final String TOKEN_GENERATION_FAILED_MSG = "Failed to generate token";
+    private static final String DUMMY_PASSWORD_HASH = BCrypt.hashpw("dummy-password", BCrypt.gensalt());
 
     public AuthServiceImpl(UserRepository userRepository, TokenGenerator tokenGenerator) {
         this.userRepository = userRepository;
@@ -36,17 +38,33 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(LoginDTO loginDTO) {
-        Optional<User> userOpt = userRepository.findByEmail(loginDTO.getEmail());
+        String email = normalizeEmail(loginDTO.getEmail());
+        if (email == null || email.isBlank()) {
+            throw new HttpStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MSG);
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        String storedHash = userOpt.map(User::getPassword).orElse(DUMMY_PASSWORD_HASH);
+        boolean passwordMatches = BCrypt.checkpw(loginDTO.getPassword(), storedHash);
+
+        if (userOpt.isEmpty() || !passwordMatches) {
+            throw new HttpStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MSG);
+        }
+
+        return generateToken(userOpt.get());
+    }
+
+    @Override
+    public String refreshLogin(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
             throw new HttpStatusException(HttpStatus.UNAUTHORIZED, USER_NOT_FOUND_MSG);
         }
 
-        User user = userOpt.get();
-        boolean passwordMatches = BCrypt.checkpw(loginDTO.getPassword(), user.getPassword());
-        if (!passwordMatches) {
-            throw new HttpStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MSG);
-        }
+        return generateToken(userOpt.get());
+    }
 
+    private String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         Instant now = Instant.now();
         claims.put("sub", user.getEmail());
@@ -56,6 +74,14 @@ public class AuthServiceImpl implements AuthService {
         claims.put("roles", List.of(user.getRole().name()));
 
         return tokenGenerator.generateToken(claims)
-            .orElseThrow(() -> new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate token"));
+            .orElseThrow(() -> new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR, TOKEN_GENERATION_FAILED_MSG));
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+
+        return email.trim();
     }
 }

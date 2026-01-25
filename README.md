@@ -102,6 +102,7 @@ Important: Change the JWT secret in production environments.
 - `/swagger/**` - Swagger API documentation
 - `/swagger-ui/**` - Swagger UI interface
 - `/auth/login` - User authentication
+- `/auth/refresh` - Refresh JWT cookie (requires an existing auth cookie)
 - `/user/create` - User registration
 
 All other endpoints require JWT authentication via the auth cookie.

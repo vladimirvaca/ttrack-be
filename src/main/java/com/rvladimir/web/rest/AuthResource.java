@@ -9,6 +9,7 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.cookie.Cookie;
+import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.token.cookie.AccessTokenCookieConfiguration;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -40,6 +41,31 @@ public class AuthResource {
     @Post(uri = "/login", consumes = "application/json")
     public HttpResponse<Void> login(@Body @Valid LoginDTO loginDTO) {
         String token = authService.login(loginDTO);
+        Cookie authCookie = buildAuthCookie(token);
+
+        return HttpResponse.<Void>noContent().cookie(authCookie);
+    }
+
+    @ApiResponse(
+        responseCode = "204",
+        description = "Successful refresh. JWT cookie is renewed.",
+        headers = @Header(name = "Set-Cookie", description = "Auth cookie with the refreshed JWT.")
+    )
+    @ApiResponse(responseCode = "401", description = "Unauthorized - Missing or invalid token.")
+    @Operation(summary = "Refresh Login", description = "Refreshes the JWT cookie for an authenticated user.")
+    @Post(uri = "/refresh")
+    public HttpResponse<Void> refreshLogin(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            return HttpResponse.unauthorized();
+        }
+
+        String token = authService.refreshLogin(authentication.getName());
+        Cookie authCookie = buildAuthCookie(token);
+
+        return HttpResponse.<Void>noContent().cookie(authCookie);
+    }
+
+    private Cookie buildAuthCookie(String token) {
         Cookie authCookie = Cookie.of(cookieConfig.getCookieName(), token)
             .httpOnly(cookieConfig.isCookieHttpOnly().orElse(true));
 
@@ -49,6 +75,6 @@ public class AuthResource {
         cookieConfig.getCookieMaxAge().ifPresent(authCookie::maxAge);
         cookieConfig.getCookieSameSite().ifPresent(authCookie::sameSite);
 
-        return HttpResponse.<Void>noContent().cookie(authCookie);
+        return authCookie;
     }
 }
