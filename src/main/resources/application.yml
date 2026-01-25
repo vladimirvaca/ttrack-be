@@ -9,6 +9,7 @@ micronaut:
         web:
           allowedOrigins:
             - http://localhost:5173
+          allowCredentials: true
           allowedMethods:
             - GET
             - POST
@@ -28,7 +29,10 @@ micronaut:
         paths: "classpath:META-INF/swagger/views/swagger-ui"
   security:
     enabled: true
+    authentication: cookie
     token:
+      bearer:
+        enabled: false
       jwt:
         enabled: true
         generator:
@@ -38,6 +42,14 @@ micronaut:
           secret:
             generator:
               secret: "PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"
+      cookie:
+        enabled: true
+        cookie-name: ${JWT_COOKIE_NAME:access_token}
+        cookie-path: /
+        cookie-http-only: true
+        cookie-secure: ${JWT_COOKIE_SECURE:false}
+        cookie-same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+        cookie-max-age: ${JWT_COOKIE_MAX_AGE:3600s}
     intercept-url-map:
       - pattern: /swagger/**
         httpMethod: GET

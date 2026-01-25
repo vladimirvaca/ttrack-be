@@ -3,7 +3,6 @@ package com.rvladimir.service.impl;
 import com.rvladimir.domain.User;
 import com.rvladimir.repository.UserRepository;
 import com.rvladimir.service.AuthService;
-import com.rvladimir.service.dto.JwtDTO;
 import com.rvladimir.service.dto.LoginDTO;
 
 import io.micronaut.http.HttpStatus;
@@ -36,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public JwtDTO login(LoginDTO loginDTO) {
+    public String login(LoginDTO loginDTO) {
         Optional<User> userOpt = userRepository.findByEmail(loginDTO.getEmail());
         if (userOpt.isEmpty()) {
             throw new HttpStatusException(HttpStatus.UNAUTHORIZED, USER_NOT_FOUND_MSG);
@@ -56,9 +55,7 @@ public class AuthServiceImpl implements AuthService {
         claims.put("userId", user.getId());
         claims.put("roles", List.of(user.getRole().name()));
 
-        String token = tokenGenerator.generateToken(claims)
+        return tokenGenerator.generateToken(claims)
             .orElseThrow(() -> new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate token"));
-
-        return new JwtDTO(token);
     }
 }

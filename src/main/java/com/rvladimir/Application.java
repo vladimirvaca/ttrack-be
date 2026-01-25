@@ -2,6 +2,7 @@ package com.rvladimir;
 
 import io.micronaut.runtime.Micronaut;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -20,14 +21,15 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
         )
     ),
     security = {
-        @SecurityRequirement(name = "bearerAuth")
+        @SecurityRequirement(name = "cookieAuth")
     }
 )
 @SecurityScheme(
-    name = "bearerAuth",
-    type = SecuritySchemeType.HTTP,
-    scheme = "bearer",
-    bearerFormat = "JWT"
+    name = "cookieAuth",
+    type = SecuritySchemeType.APIKEY,
+    in = SecuritySchemeIn.COOKIE,
+    paramName = "access_token",
+    description = "JWT stored in an HttpOnly cookie."
 )
 public final class Application {
     private Application() {

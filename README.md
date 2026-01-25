@@ -1,7 +1,7 @@
 # TTrack Backend
 
 An exercise time-tracking application backend built with Micronaut framework,
-featuring JWT authentication, PostgreSQL database, and comprehensive code quality checks.
+featuring JWT authentication via HttpOnly cookies, PostgreSQL database, and comprehensive code quality checks.
 
 ## Technologies Used
 
@@ -12,7 +12,7 @@ featuring JWT authentication, PostgreSQL database, and comprehensive code qualit
 - **Netty** - Reactive HTTP server
 
 ### Security & Authentication
-- **Micronaut Security JWT** - JWT-based authentication and authorization
+- **Micronaut Security JWT** - JWT-based authentication and authorization via cookies
 - **jjwt 0.12.5** - JSON Web Token implementation
 - **BCrypt (jbcrypt 0.4)** - Password hashing library
 
@@ -71,11 +71,14 @@ datasources:
     password: ttrack-password
 ```
 
-**JWT Security:**
+**JWT Security (cookie-based):**
 ```yaml
 micronaut:
   security:
+    authentication: cookie
     token:
+      bearer:
+        enabled: false
       jwt:
         generator:
           access-token:
@@ -84,9 +87,16 @@ micronaut:
           secret:
             generator:
               secret: "PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"
+      cookie:
+        enabled: true
+        cookie-name: ${JWT_COOKIE_NAME:access_token}
+        cookie-http-only: true
+        cookie-secure: ${JWT_COOKIE_SECURE:false}
+        cookie-same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+        cookie-max-age: ${JWT_COOKIE_MAX_AGE:3600s}
 ```
 
-⚠️ **Important**: Change the JWT secret in production environments!
+Important: Change the JWT secret in production environments.
 
 **Public Endpoints:**
 - `/swagger/**` - Swagger API documentation
@@ -94,7 +104,7 @@ micronaut:
 - `/auth/login` - User authentication
 - `/user/create` - User registration
 
-All other endpoints require JWT authentication.
+All other endpoints require JWT authentication via the auth cookie.
 
 ### 3. Build the Project
 
