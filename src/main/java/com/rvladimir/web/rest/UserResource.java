@@ -7,6 +7,7 @@ import com.rvladimir.service.dto.UserDTO;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,4 +35,10 @@ public class UserResource {
         UserDTO userDTO = userService.create(createUserDto);
         return HttpResponse.created(userDTO);
     }
+
+    @Get()
+    public HttpResponse<String> getUser() {
+        return HttpResponse.ok().body("{\"message\": \"All good!\"}");
+    }
+
 }
