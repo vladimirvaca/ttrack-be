@@ -27,7 +27,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final TokenGenerator tokenGenerator;
     private static final String INVALID_CREDENTIALS_MSG = "Invalid email or password.";
-    private static final String USER_NOT_FOUND_MSG = "User not found.";
     private static final String TOKEN_GENERATION_FAILED_MSG = "Failed to generate token";
     private static final String DUMMY_PASSWORD_HASH = BCrypt.hashpw("dummy-password", BCrypt.gensalt());
 
@@ -49,16 +48,6 @@ public class AuthServiceImpl implements AuthService {
 
         if (userOpt.isEmpty() || !passwordMatches) {
             throw new HttpStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MSG);
-        }
-
-        return generateToken(userOpt.get());
-    }
-
-    @Override
-    public String refreshLogin(String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            throw new HttpStatusException(HttpStatus.UNAUTHORIZED, USER_NOT_FOUND_MSG);
         }
 
         return generateToken(userOpt.get());

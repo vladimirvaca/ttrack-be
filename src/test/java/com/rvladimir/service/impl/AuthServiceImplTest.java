@@ -164,32 +164,4 @@ class AuthServiceImplTest {
                     .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.getCode());
             });
     }
-
-    @Test
-    void testRefreshLoginSuccess() {
-        // Given
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.of(user));
-        when(tokenGenerator.generateToken(any(Map.class))).thenReturn(Optional.of(TOKEN_VALUE));
-
-        // When
-        String token = authService.refreshLogin(TEST_EMAIL);
-
-        // Then
-        assertThat(token).isEqualTo(TOKEN_VALUE);
-        verify(tokenGenerator).generateToken(any(Map.class));
-    }
-
-    @Test
-    void testRefreshLoginUserNotFound() {
-        // Given
-        when(userRepository.findByEmail(TEST_EMAIL)).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThatThrownBy(() -> authService.refreshLogin(TEST_EMAIL))
-            .isInstanceOf(HttpStatusException.class)
-            .satisfies(ex -> {
-                HttpStatusException statusEx = (HttpStatusException) ex;
-                assertThat(statusEx.getStatus().getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.getCode());
-            });
-    }
 }
