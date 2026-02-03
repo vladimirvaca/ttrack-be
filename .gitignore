@@ -13,3 +13,16 @@ out/
 .settings
 .classpath
 .factorypath
+
+# Docker
+*.tar
+*.tar.gz
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+

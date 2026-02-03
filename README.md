@@ -289,11 +289,63 @@ ttrack-be/
 6. **Commit**: Git pre-commit hook runs automatically
 7. **View API**: Access Swagger UI for API testing
 
+## CI/CD Pipeline
+
+This project includes a comprehensive **GitLab CI/CD pipeline** for automated testing, code quality checks, and Docker image building.
+
+### Pipeline Stages
+
+1. **Validate**: Checkstyle code quality checks
+2. **Test**: Unit, integration, and E2E tests (run in parallel)
+3. **Build**: Docker image creation
+4. **Publish**: Push to GitLab Container Registry (manual approval required 👍)
+
+### Quick Start with CI/CD
+
+1. **Push to GitLab**: The pipeline runs automatically
+2. **View Pipeline**: Check progress in GitLab CI/CD → Pipelines
+3. **Approve Publishing**: Click the play button (▶️) on `publish-docker-image` job
+4. **Pull Image**: 
+   ```bash
+   docker pull registry.gitlab.com/your-username/ttrack-be:latest
+   ```
+
+### Deploy with Docker
+
+Use the provided `docker-compose.ci.yml` for production deployment:
+
+```bash
+# Create .env file from example
+cp .env.example .env
+
+# Edit .env with your configuration
+nano .env
+
+# Deploy the application
+docker-compose -f docker-compose.ci.yml up -d
+```
+
+
+## Docker Image
+
+### Available Tags
+- `latest` - Latest build from any branch
+- `{commit-sha}` - Specific commit
+- `{branch-name}` - Latest from a specific branch
+- `{version}` - Release version (e.g., v1.0.0)
+
+### Image Features
+- **Multi-stage build** for optimized size (~200-250 MB)
+- **Non-root user** for enhanced security
+- **Health checks** included
+- **JVM optimized** for containers
+
 ## Additional Resources
 
 - [Micronaut Documentation](https://docs.micronaut.io/4.10.4/guide/index.html)
 - [Micronaut Security JWT](https://micronaut-projects.github.io/micronaut-security/latest/guide/)
 - [Flyway Documentation](https://flywaydb.org/documentation/)
 - [Checkstyle Rules](https://checkstyle.org/checks.html)
+- [GitLab CI/CD Documentation](https://docs.gitlab.com/ee/ci/)
 
 > **Developed with ❤️ by vladimirvaca 👽**

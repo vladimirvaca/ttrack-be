@@ -1,0 +1,62 @@
+# Dockerignore file for TTrack Backend
+# Exclude unnecessary files from Docker build context
+
+# Build outputs
+build/
+.gradle/
+out/
+target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+*~
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD files
+.gitlab-ci.yml
+.github/
+
+# Documentation
+README.md
+docs/
+*.md
+
+# Docker files
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Test files
+src/test/
+src/integrationTest/
+src/e2eTest/
+
+# Git hooks
+pre-commit
+pre-push
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
