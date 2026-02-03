@@ -202,7 +202,7 @@ publish-docker-image:
       fi
   after_script:
     - docker logout $CI_REGISTRY
-  # Manual approval required (thumbs up)
+  # Manual approval required before publishing
   when: manual
   allow_failure: false
   only:

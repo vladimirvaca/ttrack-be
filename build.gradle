@@ -163,6 +163,8 @@ tasks.named("dockerfileNative") {
 tasks.register("installPreCommitGitHook") {
     description = "Installs the pre-commit git hook"
     group = "build setup"
+    // Skip hook installation in CI environments
+    onlyIf { !System.getenv('CI') }
 
     doLast {
         def targetFile = file("$rootDir/.git/hooks/pre-commit")
@@ -174,6 +176,8 @@ tasks.register("installPreCommitGitHook") {
 tasks.register("installPrePushGitHook") {
     description = "Installs the pre-push git hook"
     group = "build setup"
+    // Skip hook installation in CI environments
+    onlyIf { !System.getenv('CI') }
 
     doLast {
         def targetFile = file("$rootDir/.git/hooks/pre-push")

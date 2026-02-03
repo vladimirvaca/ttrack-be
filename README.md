@@ -304,7 +304,7 @@ This project includes a comprehensive **GitLab CI/CD pipeline** for automated te
 
 1. **Push to GitLab**: The pipeline runs automatically
 2. **View Pipeline**: Check progress in GitLab CI/CD → Pipelines
-3. **Approve Publishing**: Click the play button (▶️) on `publish-docker-image` job
+3. **Approve Publishing**: Click the play button (▶️) on `publish-docker-image` job to manually trigger
 4. **Pull Image**: 
    ```bash
    docker pull registry.gitlab.com/your-username/ttrack-be:latest
