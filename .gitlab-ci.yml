@@ -51,8 +51,6 @@ checkstyle:
       junit: build/reports/checkstyle/*.xml
     expire_in: 1 week
   allow_failure: false
-  tags:
-    - docker
 
 # =============================================================================
 # TEST STAGE - Run all test suites in parallel
@@ -73,8 +71,6 @@ unit-tests:
     expire_in: 1 week
   coverage: '/Total.*?([0-9]{1,3})%/'
   allow_failure: false
-  tags:
-    - docker
 
 integration-tests:
   stage: test
@@ -105,8 +101,6 @@ integration-tests:
       junit: build/test-results/integrationTest/TEST-*.xml
     expire_in: 1 week
   allow_failure: false
-  tags:
-    - docker
 
 e2e-tests:
   stage: test
@@ -137,8 +131,6 @@ e2e-tests:
       junit: build/test-results/e2eTest/TEST-*.xml
     expire_in: 1 week
   allow_failure: false
-  tags:
-    - docker
 
 # =============================================================================
 # BUILD STAGE - Build Docker Image
@@ -167,8 +159,6 @@ build-docker-image:
   only:
     - branches
     - tags
-  tags:
-    - docker
   needs:
     - job: checkstyle
     - job: unit-tests
@@ -218,8 +208,6 @@ publish-docker-image:
   only:
     - branches
     - tags
-  tags:
-    - docker
   needs:
     - job: build-docker-image
       artifacts: true
