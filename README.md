@@ -322,7 +322,7 @@ cp .env.example .env
 nano .env
 
 # Deploy the application
-docker-compose -f docker-compose.ci.yml up -d
+docker-compose -f docker-compose.ci_cd_pipeline.yml up -d
 ```
 
 

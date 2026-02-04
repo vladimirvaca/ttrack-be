@@ -15,6 +15,8 @@ RUN gradle dependencies --no-daemon || true
 COPY src ./src
 
 # Build the application (creates optimized JAR)
+# Set CI=true to skip git hook installation tasks
+ENV CI=true
 RUN gradle shadowJar --no-daemon
 
 # Stage 2: Runtime image
