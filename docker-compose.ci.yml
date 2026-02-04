@@ -27,7 +27,7 @@ services:
 
   # TTrack Backend Application
   app:
-    image: ${DOCKER_IMAGE:-registry.gitlab.com/your-username/ttrack-be:latest}
+    image: ${DOCKER_IMAGE:-ghcr.io/your-username/ttrack-be:latest}
     container_name: ttrack-backend
     restart: unless-stopped
     ports:

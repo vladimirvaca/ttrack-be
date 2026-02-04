@@ -291,23 +291,23 @@ ttrack-be/
 
 ## CI/CD Pipeline
 
-This project includes a comprehensive **GitLab CI/CD pipeline** for automated testing, code quality checks, and Docker image building.
+This project includes a comprehensive **GitHub Actions CI/CD pipeline** for automated testing, code quality checks, and Docker image building.
 
 ### Pipeline Stages
 
 1. **Validate**: Checkstyle code quality checks
 2. **Test**: Unit, integration, and E2E tests (run in parallel)
 3. **Build**: Docker image creation
-4. **Publish**: Push to GitLab Container Registry (manual approval required 👍)
+4. **Publish**: Push to GitHub Container Registry (automatic on push to main/tags)
 
 ### Quick Start with CI/CD
 
-1. **Push to GitLab**: The pipeline runs automatically
-2. **View Pipeline**: Check progress in GitLab CI/CD → Pipelines
-3. **Approve Publishing**: Click the play button (▶️) on `publish-docker-image` job to manually trigger
+1. **Push to GitHub**: The pipeline runs automatically on push/PR
+2. **View Pipeline**: Check progress in GitHub Actions → CI/CD Pipeline
+3. **View Results**: Test results and artifacts are published automatically
 4. **Pull Image**: 
    ```bash
-   docker pull registry.gitlab.com/your-username/ttrack-be:latest
+   docker pull ghcr.io/your-username/ttrack-be:latest
    ```
 
 ### Deploy with Docker
@@ -329,10 +329,12 @@ docker-compose -f docker-compose.ci.yml up -d
 ## Docker Image
 
 ### Available Tags
-- `latest` - Latest build from any branch
-- `{commit-sha}` - Specific commit
+- `latest` - Latest build from main/master branch
 - `{branch-name}` - Latest from a specific branch
-- `{version}` - Release version (e.g., v1.0.0)
+- `{branch-name}-{sha}` - Specific commit from a branch
+- `v{version}` - Release version (e.g., v1.0.0)
+- `{major}.{minor}` - Semantic version tags (e.g., 1.0)
+- `{major}` - Major version tag (e.g., 1)
 
 ### Image Features
 - **Multi-stage build** for optimized size (~200-250 MB)
@@ -346,6 +348,6 @@ docker-compose -f docker-compose.ci.yml up -d
 - [Micronaut Security JWT](https://micronaut-projects.github.io/micronaut-security/latest/guide/)
 - [Flyway Documentation](https://flywaydb.org/documentation/)
 - [Checkstyle Rules](https://checkstyle.org/checks.html)
-- [GitLab CI/CD Documentation](https://docs.gitlab.com/ee/ci/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
 
 > **Developed with ❤️ by vladimirvaca 👽**
