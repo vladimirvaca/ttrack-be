@@ -238,6 +238,7 @@ jobs:
 
   # =============================================================================
   # PUBLISH STAGE - Publish Docker Image to GitHub Container Registry
+  # Requires manual approval via GitHub environment protection rules
   # =============================================================================
 
   publish-docker-image:
