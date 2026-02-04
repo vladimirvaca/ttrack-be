@@ -21,6 +21,11 @@ on:
       - develop
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 env:
   # Disable Gradle daemon for CI (recommended)
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -89,6 +94,7 @@ jobs:
 
       - name: Publish test results
         if: always()
+        continue-on-error: true
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: build/test-results/test/TEST-*.xml
@@ -126,6 +132,7 @@ jobs:
 
       - name: Publish test results
         if: always()
+        continue-on-error: true
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: build/test-results/integrationTest/TEST-*.xml
@@ -163,6 +170,7 @@ jobs:
 
       - name: Publish test results
         if: always()
+        continue-on-error: true
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: build/test-results/e2eTest/TEST-*.xml
