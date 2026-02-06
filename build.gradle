@@ -5,7 +5,15 @@ plugins {
     id("checkstyle")
 }
 
-version = "0.1"
+def versionProps = new Properties()
+def versionPropsFile = file('version.properties')
+if (versionPropsFile.exists()) {
+    versionPropsFile.withInputStream {
+        versionProps.load(it)
+    }
+}
+
+version = versionProps.getProperty('version', '0.1')
 group = "com.rvladimir"
 
 repositories {
