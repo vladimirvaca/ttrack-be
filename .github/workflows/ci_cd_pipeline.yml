@@ -47,17 +47,6 @@ jobs:
       - name: Run Checkstyle checks
         run: ./gradlew checkstyleMain checkstyleTest checkstyleIntegrationTest checkstyleE2eTest --no-daemon
 
-      - name: Review Checkstyle violations
-        uses: reviewdog/action-checkstyle@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review # Change reporter to github-pr-check to use check annotations
-          checkstyle_config: src/main/resources/checkstyle/checkstyle.xml
-          level: error
-          filter_mode: nofilter
-          fail_on_error: true
-          path: "build/reports/checkstyle/*.xml"
-
       - name: Upload Checkstyle reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -92,6 +81,13 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test --no-daemon
 
+      - name: Publish test results
+        if: always()
+        continue-on-error: true
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: build/test-results/test/TEST-*.xml
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -123,6 +119,13 @@ jobs:
 
       - name: Run integration tests
         run: ./gradlew integrationTest --no-daemon
+
+      - name: Publish test results
+        if: always()
+        continue-on-error: true
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: build/test-results/integrationTest/TEST-*.xml
 
       - name: Upload test reports
         if: always()
@@ -156,6 +159,13 @@ jobs:
       - name: Run E2E tests
         run: ./gradlew e2eTest --no-daemon
 
+      - name: Publish test results
+        if: always()
+        continue-on-error: true
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: build/test-results/e2eTest/TEST-*.xml
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -165,33 +175,6 @@ jobs:
             build/reports/tests/e2eTest/
             build/test-results/e2eTest/
           retention-days: 7
-
-  # =============================================================================
-  # PUBLISH TEST RESULTS - Aggregated test results summary
-  # =============================================================================
-
-  publish-test-results:
-    name: 'Publish Test Results'
-    needs: [unit-tests, integration-tests, e2e-tests]
-    runs-on: ubuntu-latest
-    # Always run this job to publish test results, even if previous jobs fail
-    if: always()
-
-    steps:
-      - name: Download all test results
-        uses: actions/download-artifact@v4
-        with:
-          path: all-test-results
-          pattern: '*-test-reports'
-          merge-multiple: true
-
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: |
-            all-test-results/test-results/test/TEST-*.xml
-            all-test-results/test-results/integrationTest/TEST-*.xml
-            all-test-results/test-results/e2eTest/TEST-*.xml
 
   build-and-publish-on-tag:
     name: Build and Publish on Tag
