@@ -21,6 +21,15 @@ on:
       - develop
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  # Disable Gradle daemon for CI (recommended)
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
 jobs:
   # =============================================================================
   # VALIDATE STAGE - Code Quality Checks
