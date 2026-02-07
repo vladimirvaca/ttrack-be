@@ -21,6 +21,14 @@ on:
       - develop
   workflow_dispatch:
 
+# Prevent duplicate workflow runs.
+# When a tag is pushed along with a commit, only run the workflow once.
+# Use the commit SHA for grouping so both branch and tag pushes of the same commit share a group.
+# cancel-in-progress ensures only one run completes for the same commit SHA.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   checks: write
@@ -267,26 +275,22 @@ jobs:
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}"^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
           echo "Previous tag: $PREVIOUS_TAG"
 
-          # Get the commit log between the previous tag and the current one
-          COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" $PREVIOUS_TAG..${{ github.ref_name }})
-
-          # Escape special characters for multiline JSON
-          COMMIT_LOG="${COMMIT_LOG//'%'/'%25'}"
-          COMMIT_LOG="${COMMIT_LOG//$'\n'/'%0A'}"
-          COMMIT_LOG="${COMMIT_LOG//$'\r'/'%0D'}"
-
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "## What's Changed" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "$COMMIT_LOG" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "## Release ${{ github.ref_name }}" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "This release has been automatically generated." >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "**Docker Image:**" >> $GITHUB_ENV
-          echo "\`ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}\`" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          # Build the changelog directly into GITHUB_ENV using heredoc (no escaping needed)
+          {
+            echo "CHANGELOG<<EOF"
+            echo "## What's Changed"
+            echo ""
+            git log --pretty=format:"* %s (%h)" $PREVIOUS_TAG..${{ github.ref_name }}
+            echo ""
+            echo ""
+            echo "## Release ${{ github.ref_name }}"
+            echo ""
+            echo "This release has been automatically generated."
+            echo ""
+            echo "**Docker Image:**"
+            echo "\`ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}\`"
+            echo "EOF"
+          } >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
