@@ -1,5 +1,5 @@
 # Reusable workflow for running all tests
-# This workflow is called by both ci_cd_pipeline.yml and release.yml
+# This workflow is called by both ci.yml and release.yml
 
 name: Reusable Tests
 
