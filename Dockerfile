@@ -4,8 +4,8 @@ WORKDIR /app
 ENV CI=true
 
 COPY . .
-# Build the optimized Docker layers
-RUN ./gradlew optimizedBuildLayers --no-daemon
+# Make gradlew executable and build the optimized Docker layers
+RUN chmod +x ./gradlew && ./gradlew optimizedBuildLayers --no-daemon
 
 # --- STAGE 2: Runtime ---
 FROM eclipse-temurin:21-jre-alpine
