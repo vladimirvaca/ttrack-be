@@ -402,7 +402,7 @@ This section describes how to build, deploy, and release a new version of the TT
   1. Validate (Checkstyle)
   2. Test (unit, integration, e2e)
   3. Build and publish Docker image (on tag)
-  4. Create GitHub Release (on tag)
+  4. Create GitHubRelease (on tag)
 - **Artifacts:**
   - Test reports
   - Checkstyle reports
