@@ -342,12 +342,74 @@ docker-compose -f docker-compose.ci_cd_pipeline.yml up -d
 - **Health checks** included
 - **JVM optimized** for containers
 
-## Additional Resources
+## Release Workflow
 
-- [Micronaut Documentation](https://docs.micronaut.io/4.10.4/guide/index.html)
-- [Micronaut Security JWT](https://micronaut-projects.github.io/micronaut-security/latest/guide/)
-- [Flyway Documentation](https://flywaydb.org/documentation/)
-- [Checkstyle Rules](https://checkstyle.org/checks.html)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+This section describes how to build, deploy, and release a new version of the TTrack Backend app, including versioning, tagging, and publishing a Docker image and GitHub release.
+
+### 1. Bump the Version
+
+- Update the version in `version.properties` (e.g., `version=0.0.8`).
+- Commit the change with a descriptive message (e.g., `chore: bump version to 0.0.8`).
+
+### 2. Push Changes and Create a Tag
+
+- Push your changes to the main branch or a release branch.
+- Create a new Git tag matching the version (e.g., `v0.0.8`).
+- Push the tag to GitHub:
+  ```powershell
+  git tag v0.0.8
+  git push origin v0.0.8
+  ```
+
+### 3. CI/CD Pipeline (Automated)
+
+- The GitHub Actions pipeline will trigger automatically on tag push.
+- The pipeline will:
+  - Run Checkstyle and all test suites
+  - Validate the tag version matches `version.properties`
+  - Build and publish the Docker image to GitHub Container Registry
+  - Create a GitHub Release with changelog and Docker image reference
+
+### 4. Manual Release Steps (if needed)
+
+- If the pipeline fails, review the logs in GitHub Actions and fix any issues.
+- Ensure the tag and `version.properties` are consistent.
+
+### 5. Pull and Deploy the Docker Image
+
+- After a successful release, pull the published Docker image:
+  ```powershell
+  docker pull ghcr.io/<your-username>/ttrack-be:<version>
+  ```
+- Deploy using `docker-compose.ci.yml` as described in the deployment section.
+
+### 6. View Release Artifacts
+
+- GitHub Release will include:
+  - Changelog (commit history between tags)
+  - Docker image reference
+  - Test and Checkstyle reports as artifacts
+
+---
+
+## CI/CD Pipeline Summary
+
+- **Triggers:**
+  - On push to main, master, develop, feature/*, bugfix/*, hotfix/* branches
+  - On tag push (v*)
+  - On pull request to main, master, develop
+- **Stages:**
+  1. Validate (Checkstyle)
+  2. Test (unit, integration, e2e)
+  3. Build and publish Docker image (on tag)
+  4. Create GitHub Release (on tag)
+- **Artifacts:**
+  - Test reports
+  - Checkstyle reports
+  - Docker image
+  - Changelog
+
+- **For detailed pipeline steps, see `.github/workflows/ci_cd_pipeline.yml`**
+---
 
 > **Developed with ❤️ by vladimirvaca 👽**
