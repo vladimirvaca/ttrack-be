@@ -1,0 +1,224 @@
+# GitHub Actions Release Pipeline for TTrack Backend
+# This workflow handles tag-based releases separately from the CI pipeline
+# to prevent duplicate workflow runs when pushing a commit with a tag.
+
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+jobs:
+  # =============================================================================
+  # VALIDATE STAGE - Code Quality Checks
+  # =============================================================================
+
+  checkstyle:
+    name: Checkstyle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run Checkstyle checks
+        run: ./gradlew checkstyleMain checkstyleTest checkstyleIntegrationTest checkstyleE2eTest --no-daemon
+
+  # =============================================================================
+  # TEST STAGE - Run all test suites in parallel
+  # =============================================================================
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [checkstyle]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run unit tests
+        run: ./gradlew test --no-daemon
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [checkstyle]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run integration tests
+        run: ./gradlew integrationTest --no-daemon
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [checkstyle]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run E2E tests
+        run: ./gradlew e2eTest --no-daemon
+
+  # =============================================================================
+  # BUILD & PUBLISH STAGE
+  # =============================================================================
+
+  build-and-publish:
+    name: Build and Publish Docker Image
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Validate tag version matches file version
+        run: |
+          # Read version from version.properties
+          FILE_VERSION=$(grep '^version=' version.properties | cut -d'=' -f2)
+
+          echo "Git Tag Version: ${{ steps.extract_version.outputs.VERSION }}"
+          echo "version.properties Version: $FILE_VERSION"
+
+          if [[ "${{ steps.extract_version.outputs.VERSION }}" != "$FILE_VERSION" ]]; then
+            echo "Error: Git tag version does not match version in version.properties."
+            exit 1
+          fi
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.extract_version.outputs.VERSION }}
+
+  # =============================================================================
+  # RELEASE STAGE
+  # =============================================================================
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-and-publish]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag, or the first commit if no previous tag exists
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}"^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "Previous tag: $PREVIOUS_TAG"
+
+          # Build the changelog directly into GITHUB_ENV using heredoc (no escaping needed)
+          {
+            echo "CHANGELOG<<EOF"
+            echo "## What's Changed"
+            echo ""
+            git log --pretty=format:"* %s (%h)" $PREVIOUS_TAG..${{ github.ref_name }}
+            echo ""
+            echo ""
+            echo "## Release ${{ github.ref_name }}"
+            echo ""
+            echo "This release has been automatically generated."
+            echo ""
+            echo "**Docker Image:**"
+            echo "\`ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}\`"
+            echo "EOF"
+          } >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          body: ${{ env.CHANGELOG }}
+          draft: false
+          prerelease: false
+
