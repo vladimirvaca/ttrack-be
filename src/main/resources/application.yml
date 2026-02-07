@@ -67,9 +67,18 @@ micronaut:
         httpMethod: POST
         access:
           - isAnonymous()
+      - pattern: /health/**
+        httpMethod: GET
+        access:
+          - isAnonymous()
       - pattern: /**
         access:
           - isAuthenticated()
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
 
 datasources:
   default:

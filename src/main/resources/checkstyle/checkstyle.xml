@@ -277,6 +277,7 @@
         <!-- Avoid static access (allow for test assertions) -->
         <module name="AvoidStaticImport">
             <property name="excludes" value="org.assertj.core.api.Assertions.*"/>
+            <property name="excludes" value="org.junit.jupiter.api.Assertions.*"/>
             <property name="excludes" value="org.mockito.Mockito.*"/>
             <property name="excludes" value="org.mockito.ArgumentMatchers.*"/>
             <property name="excludes" value="com.rvladimir.service.impl.SessionExerciseTestHelper.*"/>
