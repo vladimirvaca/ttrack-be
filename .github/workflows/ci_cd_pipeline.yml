@@ -241,3 +241,62 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.extract_version.outputs.VERSION }}
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-and-publish-on-tag]
+    permissions:
+      contents: write # Required to create a release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history for all tags and branches to get commit history
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag, or the first commit if no previous tag exists
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}"^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "Previous tag: $PREVIOUS_TAG"
+
+          # Get the commit log between the previous tag and the current one
+          COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" $PREVIOUS_TAG..${{ github.ref_name }})
+
+          # Escape special characters for multiline JSON
+          COMMIT_LOG="${COMMIT_LOG//'%'/'%25'}"
+          COMMIT_LOG="${COMMIT_LOG//$'\n'/'%0A'}"
+          COMMIT_LOG="${COMMIT_LOG//$'\r'/'%0D'}"
+
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "## What's Changed" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "$COMMIT_LOG" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "## Release ${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "This release has been automatically generated." >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "**Docker Image:**" >> $GITHUB_ENV
+          echo "\`ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}\`" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          body: ${{ env.CHANGELOG }}
+          draft: false
+          prerelease: false
+
