@@ -50,6 +50,9 @@ micronaut:
       - pattern: /session-exercise/**
         access:
           - isAnonymous()
+      - pattern: /health/**
+        access:
+          - isAnonymous()
       - pattern: /**
         access:
           - isAuthenticated()

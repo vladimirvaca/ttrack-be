@@ -26,7 +26,7 @@ class HealthControllerTest {
         HttpResponse<String> response = client.toBlocking().exchange(request, String.class);
 
         assertEquals(HttpStatus.OK, response.getStatus());
-        assertEquals("OK", response.body());
+        assertEquals("{\"status\":\"UP\"}", response.body());
     }
 }
 
