@@ -7,9 +7,9 @@ micronaut:
       enabled: true
       configurations:
         web:
-          allowedOrigins:
+          allowedOriginsRegex:
             - http://localhost:5173
-            - http://157.100.140.169:5173
+            - http://157\.100\.140\.169:5173
           allowCredentials: true
           allowedMethods:
             - GET
