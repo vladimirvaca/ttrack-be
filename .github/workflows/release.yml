@@ -188,9 +188,27 @@ jobs:
             -o StrictHostKeyChecking=accept-new \
             -o ConnectTimeout=10 \
             -o BatchMode=yes \
-            ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SERVER_HOST }} \
-            "sudo docker compose -f ${{ secrets.DEPLOY_APP_DIR }}/docker-compose.ci.yml ps && \
-            curl -f http://localhost:8080/health || exit 1"
+            ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SERVER_HOST }} << "EOF"
+          cd ${{ secrets.DEPLOY_APP_DIR }}
+          sudo docker compose -f docker-compose.ci.yml ps
+
+          # Wait for application to be healthy (max 90 seconds)
+          echo "Waiting for application to be healthy..."
+          MAX_RETRIES=18
+          RETRY_INTERVAL=5
+          for i in $(seq 1 $MAX_RETRIES); do
+            if curl -sf http://localhost:8080/health > /dev/null 2>&1; then
+              echo "Health check passed on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i/$MAX_RETRIES: Application not ready yet, waiting ${RETRY_INTERVAL}s..."
+            sleep $RETRY_INTERVAL
+          done
+
+          echo "Health check failed after $MAX_RETRIES attempts"
+          sudo docker compose -f docker-compose.ci.yml logs --tail=100
+          exit 1
+          EOF
 
       - name: Cleanup SSH key
         if: always()
