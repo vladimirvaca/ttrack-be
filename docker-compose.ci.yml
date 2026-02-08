@@ -1,7 +1,6 @@
 # Docker Compose configuration for CI/CD and production deployment
 # This file is optimized for deploying the containerized application
 
-version: '3.8'
 
 services:
   # PostgreSQL Database

@@ -189,7 +189,7 @@ jobs:
             -o ConnectTimeout=10 \
             -o BatchMode=yes \
             ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SERVER_HOST }} \
-            "docker compose -f ${{ secrets.DEPLOY_APP_DIR }}/docker-compose.ci.yml ps && \
+            "sudo docker compose -f ${{ secrets.DEPLOY_APP_DIR }}/docker-compose.ci.yml ps && \
             curl -f http://localhost:8080/health || exit 1"
 
       - name: Cleanup SSH key
