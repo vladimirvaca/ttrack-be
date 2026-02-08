@@ -344,72 +344,176 @@ docker-compose -f docker-compose.ci.yml up -d
 
 ## Release Workflow
 
-This section describes how to build, deploy, and release a new version of the TTrack Backend app, including versioning, tagging, and publishing a Docker image and GitHub release.
+This section describes how to build, deploy, and release a new version of the TTrack Backend app. The process is **fully automated** via GitHub Actions with **SSH-based production deployment**.
 
-### 1. Bump the Version
+### How the Release Pipeline Works
 
-- Update the version in `version.properties` (e.g., `version=0.0.8`).
-- Commit the change with a descriptive message (e.g., `chore: bump version to 0.0.8`).
+The **Release Pipeline** (`.github/workflows/release.yml`) is triggered when you push a Git tag matching the pattern `v*` (e.g., `v0.0.13`). It automatically:
 
-### 2. Push Changes and Create a Tag
+1. ✅ **Runs all tests** (unit, integration, E2E) - Deployment halts if tests fail
+2. 🏗️ **Builds Docker image** - Multi-stage build, optimized for production
+3. 📦 **Pushes to GitHub Container Registry (GHCR)** - Image tagged with version
+4. 📝 **Creates GitHub Release** - Auto-generated changelog from commit history
+5. 🚀 **Deploys via SSH** - Automatically deploys to your production server using `docker-compose.ci.yml`
+6. ✨ **Verifies health** - Confirms containers are running and application is healthy
 
-- Push your changes to the main branch or a release branch.
-- Create a new Git tag matching the version (e.g., `v0.0.8`).
-- Push the tag to GitHub:
-  ```powershell
-  git tag v0.0.8
-  git push origin v0.0.8
-  ```
+**Key Features:**
+- No manual deployment steps required
+- Complete audit trail in GitHub Actions logs
+- Automatic rollback by deploying previous versions
+- Version validation (tag must match `version.properties`)
 
-### 3. CI/CD Pipeline (Automated)
+### Production Deployment via SSH
 
-- The GitHub Actions pipeline will trigger automatically on tag push.
-- The pipeline will:
-  - Run Checkstyle and all test suites
-  - Validate the tag version matches `version.properties`
-  - Build and publish the Docker image to GitHub Container Registry
-  - Create a GitHub Release with changelog and Docker image reference
+The pipeline establishes a **secure SSH connection** to your production server and executes:
+```bash
+cd /opt/ttrack-be
+git checkout v0.0.13
+export DOCKER_IMAGE=ghcr.io/your-org/ttrack-be:0.0.13
+export JWT_SECRET=<your-secret>
+docker-compose -f docker-compose.ci.yml pull
+docker-compose -f docker-compose.ci.yml down
+docker-compose -f docker-compose.ci.yml up -d
+```
 
-### 4. Manual Release Steps (if needed)
+Then verifies:
+- Containers are running: `docker-compose ps`
+- Application is healthy: `curl http://localhost:8080/health`
 
-- If the pipeline fails, review the logs in GitHub Actions and fix any issues.
-- Ensure the tag and `version.properties` are consistent.
+### Required GitHub Secrets (5 Total)
 
-### 5. Pull and Deploy the Docker Image
+Before deploying, configure these secrets in **GitHub → Settings → Secrets and variables → Actions**:
 
-- After a successful release, pull the published Docker image:
-  ```powershell
-  docker pull ghcr.io/<your-username>/ttrack-be:<version>
-  ```
-- Deploy using `docker-compose.ci.yml` as described in the deployment section.
+| Secret Name | Example Value | Purpose |
+|-------------|---------------|---------|
+| `DEPLOY_SSH_PRIVATE_KEY` | `-----BEGIN PRIVATE KEY-----...` | SSH key for server authentication (Ed25519 or RSA-4096, NO passphrase) |
+| `DEPLOY_SERVER_HOST` | `prod.example.com` | Hostname or IP address of production server |
+| `DEPLOY_SSH_USER` | `deploy` | Dedicated deployment user on server (recommended: not root) |
+| `DEPLOY_APP_DIR` | `/opt/ttrack-be` | Application directory on server where code is deployed |
+| `DEPLOY_JWT_SECRET` | `y9KzN4pQ2wX8vL1mR5tJ...` (64+ chars) | JWT secret for token signing in production |
 
-### 6. View Release Artifacts
+### Generating Required Secrets
 
-- GitHub Release will include:
-  - Changelog (commit history between tags)
-  - Docker image reference
-  - Test and Checkstyle reports as artifacts
+**Generate SSH Key** (recommended: Ed25519):
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/ttrack_deploy -C "github-deploy" -N ""
+```
+
+**Add public key to server's authorized_keys:**
+```bash
+cat ~/.ssh/ttrack_deploy.pub | ssh deploy@prod.example.com "cat >> ~/.ssh/authorized_keys"
+```
+
+**Generate JWT Secret:**
+```bash
+openssl rand -base64 32
+```
+
+### Step-by-Step Release Instructions
+
+#### 1. Update Version
+Update the version in `version.properties`:
+```properties
+version=0.0.13
+```
+
+Commit the change:
+```bash
+git add version.properties
+git commit -m "chore: bump version to 0.0.13"
+git push origin main
+```
+
+#### 2. Create and Push Tag
+Create a Git tag matching the version:
+```bash
+git tag -a v0.0.13 -m "Release v0.0.13: Description of changes"
+git push origin v0.0.13
+```
+
+#### 3. Pipeline Executes Automatically
+- GitHub Actions triggers automatically
+- Monitor progress in **GitHub → Actions → Release Pipeline**
+- Pipeline stages:
+  - **Tests** - Runs all test suites (~5-10 min)
+  - **Build & Publish** - Builds Docker image and pushes to GHCR (~5-10 min)
+  - **Create Release** - Generates GitHub Release with changelog (~1 min)
+  - **Deploy** - SSH to server, pulls code/image, restarts containers (~2-3 min)
+
+#### 4. Verify Deployment
+After pipeline completes:
+```bash
+# Check application health
+curl https://prod.example.com:8080/health
+
+# Or SSH to server
+ssh -i ~/.ssh/ttrack_deploy deploy@prod.example.com
+docker-compose -f /opt/ttrack-be/docker-compose.ci.yml ps
+docker-compose -f /opt/ttrack-be/docker-compose.ci.yml logs -f app
+```
+
+### Rollback to Previous Version
+
+If you need to revert to a previous version:
+```bash
+# Deploy previous tag
+git push origin v0.0.12
+
+# Or manually on server
+cd /opt/ttrack-be
+git checkout v0.0.12
+docker-compose -f docker-compose.ci.yml restart app
+```
+
+### Troubleshooting
+
+**SSH Connection Fails:**
+- Check public key in server's `~/.ssh/authorized_keys`
+- Verify permissions: `chmod 600 ~/.ssh/authorized_keys && chmod 700 ~/.ssh`
+- Test manually: `ssh -i ~/.ssh/ttrack_deploy deploy@prod.example.com "echo OK"`
+
+**Deployment Failed:**
+- Check GitHub Actions logs for error details
+- Verify all 5 secrets are configured correctly
+- Ensure server has Docker and Docker Compose installed
+
+**Health Check Failed:**
+- Check container logs: `docker-compose logs app`
+- Verify application is listening on port 8080
+- Check database connectivity
+
+**Version Mismatch:**
+- Ensure git tag matches `version.properties` (e.g., tag `v0.0.13` with `version=0.0.13`)
 
 ---
 
 ## CI/CD Pipeline Summary
 
-- **Triggers:**
-  - On push to main, master, develop, feature/*, bugfix/*, hotfix/* branches
-  - On tag push (v*)
-  - On pull request to main, master, develop
+### CI Pipeline (on every push/PR)
+- **Triggers:** Push to main, develop, feature/*, bugfix/*, hotfix/*, or pull requests
 - **Stages:**
-  1. Validate (Checkstyle)
-  2. Test (unit, integration, e2e)
-  3. Build and publish Docker image (on tag)
-  4. Create GitHub Release (on tag)
-- **Artifacts:**
-  - Test reports
-  - Checkstyle reports
-  - Docker image
-  - Changelog
+  1. Validate (Checkstyle code quality)
+  2. Test (unit, integration, e2e in parallel)
+  3. Build Docker image
+- **For details, see `.github/workflows/ci_cd_pipeline.yml`**
 
-- **For detailed pipeline steps, see `.github/workflows/ci_cd_pipeline.yml`**
+### Release Pipeline (on tag push v*)
+- **Triggers:** When you push a tag matching `v*` (e.g., `git push origin v0.0.13`)
+- **Stages:**
+  1. ✅ Run Tests - All test suites must pass
+  2. 🏗️ Build & Publish - Docker image built and pushed to GHCR
+  3. 📝 Create Release - GitHub Release created with changelog
+  4. 🚀 Deploy to Production - **SSH to server, pull code/image, restart with docker-compose**
+  5. ✨ Verify Health - Confirm containers running and /health endpoint responding
+- **Requirements:** 5 GitHub secrets must be configured (see Release Workflow section)
+- **For details, see `.github/workflows/release.yml`**
+
+### Artifacts & Outputs
+- Test reports (unit, integration, e2e)
+- Checkstyle reports
+- Docker image (ghcr.io/your-org/ttrack-be:version)
+- GitHub Release with changelog
+- Deployment logs in GitHub Actions
 ---
 
 > **Developed with ❤️ by vladimirvaca 👽**
