@@ -170,16 +170,17 @@ jobs:
             -o StrictHostKeyChecking=accept-new \
             -o ConnectTimeout=10 \
             -o BatchMode=yes \
-            ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SERVER_HOST }} \
-            "cd ${{ secrets.DEPLOY_APP_DIR }} && \
-            git fetch --all && \
-            git checkout v${{ steps.extract_version.outputs.VERSION }} && \
-            export DOCKER_IMAGE=ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }} && \
-            export JWT_SECRET=${{ secrets.DEPLOY_JWT_SECRET }} && \
-            docker-compose -f docker-compose.ci.yml pull && \
-            docker-compose -f docker-compose.ci.yml down && \
-            docker-compose -f docker-compose.ci.yml up -d && \
-            docker-compose -f docker-compose.ci.yml logs --tail=50"
+            ${{ secrets.DEPLOY_SSH_USER }}@${{ secrets.DEPLOY_SERVER_HOST }} << "EOF"
+          cd ${{ secrets.DEPLOY_APP_DIR }}
+          git fetch --all
+          git checkout v${{ steps.extract_version.outputs.VERSION }}
+          export DOCKER_IMAGE="ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}"
+          export JWT_SECRET="${{ secrets.DEPLOY_JWT_SECRET }}"
+          docker-compose -f docker-compose.ci.yml pull
+          docker-compose -f docker-compose.ci.yml down
+          docker-compose -f docker-compose.ci.yml up -d
+          docker-compose -f docker-compose.ci.yml logs --tail=50
+          EOF
 
       - name: Verify deployment health
         run: |
