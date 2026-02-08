@@ -8,8 +8,7 @@ micronaut:
       configurations:
         web:
           allowedOriginsRegex:
-            - http://localhost:5173
-            - http://157\.100\.140\.169:5173
+            - "https?://.*"
           allowCredentials: true
           allowedMethods:
             - GET
