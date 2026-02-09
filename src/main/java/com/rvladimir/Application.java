@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @OpenAPIDefinition(
     info = @Info(
         title = "ttrack-be",
-        version = "1.0",
+        version = "0.2.12",
         description = "Time tracking API",
         contact = @Contact(
             name = "rvladimir",
@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
     description = "JWT stored in an HttpOnly cookie."
 )
 public final class Application {
+
     private Application() {
     }
 
