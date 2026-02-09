@@ -15,9 +15,9 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
         version = "0.2.13",
         description = "Time tracking API",
         contact = @Contact(
-            name = "rvladimir",
+            name = "vladimirvaca",
             email = "ramvlay@gmail.com",
-            url = "https://rvladimir.com"
+            url = "https://rwcoder.com"
         )
     ),
     security = {
