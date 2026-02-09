@@ -48,7 +48,7 @@ micronaut:
         cookie-path: /
         cookie-http-only: true
         cookie-secure: false # this should change to true in production
-        cookie-same-site: "None" # this should change to Strict in production. Lax?
+        #cookie-same-site: "None" # this should change to Strict in production. Lax?
         cookie-max-age: ${JWT_COOKIE_MAX_AGE:3600s}
     intercept-url-map:
       - pattern: /swagger/**
