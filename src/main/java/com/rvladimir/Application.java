@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @OpenAPIDefinition(
     info = @Info(
         title = "ttrack-be",
-        version = "0.2.12",
+        version = "0.2.13",
         description = "Time tracking API",
         contact = @Contact(
             name = "rvladimir",
