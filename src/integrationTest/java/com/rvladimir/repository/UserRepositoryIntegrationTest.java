@@ -230,8 +230,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             userRepository.flush();
             // Should not reach here
             assertThat(false).isTrue();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             assertThat(e).hasMessageContaining(DUPLICATE_KEYWORD);
         }
     }

@@ -31,13 +31,23 @@ public class UserResource {
     @Operation(summary = "Create a new user", description = "Creates a new user in the system.")
     @Post(uri = "/create")
     public HttpResponse<UserDTO> createUser(@Body @Valid CreateUserDTO createUserDto) {
-        log.info("Creating user with username: {}", createUserDto.getEmail());
+        log.info("Creating user with email: {}", createUserDto.getEmail());
         UserDTO userDTO = userService.create(createUserDto);
+        if (userDTO == null) {
+            log.warn("User creation failed for email: {}", createUserDto.getEmail());
+        } else {
+            log.info(
+                "User created successfully: id={}, email={}",
+                userDTO.getId(),
+                userDTO.getEmail()
+            );
+        }
         return HttpResponse.created(userDTO);
     }
 
     @Get()
     public HttpResponse<String> getUser() {
+        log.info("getUser endpoint called");
         return HttpResponse.ok().body("{\"message\": \"All good!\"}");
     }
 

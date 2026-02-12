@@ -17,9 +17,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Tag(name = "Auth")
 @Controller("/auth")
 @Requires(bean = AccessTokenCookieConfiguration.class)
+@Slf4j
 public class AuthResource {
 
     private final AuthService authService;
@@ -39,9 +42,18 @@ public class AuthResource {
     @Operation(summary = "User Login", description = "Authenticates a user and sets a JWT cookie.")
     @Post(uri = "/login", consumes = "application/json")
     public HttpResponse<Void> login(@Body @Valid LoginDTO loginDTO) {
-        String token = authService.login(loginDTO);
-        Cookie authCookie = buildAuthCookie(token);
+        log.info("Login attempt for user: {}", loginDTO.getEmail());
 
+        String token;
+        try {
+            token = authService.login(loginDTO);
+        } catch (Exception ex) {
+            log.warn("Login failed for user: {} - {}", loginDTO.getEmail(), ex.getMessage());
+            return HttpResponse.unauthorized();
+        }
+
+        Cookie authCookie = buildAuthCookie(token);
+        log.info("Login successful for user: {}. JWT cookie set.", loginDTO.getEmail());
         return HttpResponse.<Void>noContent().cookie(authCookie);
     }
 
@@ -57,4 +69,5 @@ public class AuthResource {
 
         return authCookie;
     }
+
 }

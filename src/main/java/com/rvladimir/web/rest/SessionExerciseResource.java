@@ -46,6 +46,11 @@ public class SessionExerciseResource {
         log.info("Retrieving session exercises for trainingSessionId: {}", trainingSessionId);
         List<SessionExerciseDTO> result =
             sessionExerciseService.getSessionExercisesByTrainingSession(trainingSessionId);
+        if (result == null || result.isEmpty()) {
+            log.warn("No session exercises found for trainingSessionId: {}", trainingSessionId);
+        } else {
+            log.info("Found {} session exercises for trainingSessionId: {}", result.size(), trainingSessionId);
+        }
         return HttpResponse.ok(result);
     }
 
@@ -65,6 +70,16 @@ public class SessionExerciseResource {
     ) {
         log.info("Creating session exercise for trainingSessionId: {}", trainingSessionId);
         SessionExerciseDTO createdDTO = sessionExerciseService.createSessionExercise(trainingSessionId, dto);
+        if (createdDTO == null) {
+            log.warn("Session exercise creation failed for trainingSessionId: {}", trainingSessionId);
+        } else {
+            log.info(
+                "Session exercise created successfully: id={}, trainingSessionId={}",
+                createdDTO.getId(),
+                trainingSessionId
+            );
+        }
         return HttpResponse.created(createdDTO);
     }
+
 }

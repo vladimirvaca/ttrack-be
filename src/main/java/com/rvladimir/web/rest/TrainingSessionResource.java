@@ -34,6 +34,16 @@ public class TrainingSessionResource {
     ) {
         log.info("Creating training session for user ID: {}", createTrainingSessionDTO.getUserId());
         TrainingSessionDTO trainingSessionDTO = trainingSessionService.create(createTrainingSessionDTO);
+        if (trainingSessionDTO == null) {
+            log.warn("Training session creation failed for user ID: {}", createTrainingSessionDTO.getUserId());
+        } else {
+            log.info(
+                "Training session created successfully: id={}, userId={}",
+                trainingSessionDTO.getId(),
+                trainingSessionDTO.getUserId()
+            );
+        }
         return HttpResponse.created(trainingSessionDTO);
     }
+
 }

@@ -250,8 +250,7 @@ class SessionExerciseResourceIntegrationTest implements TestPropertyProvider {
         List<SessionExerciseDTO> result;
         if (response.body() != null) {
             result = response.body();
-        }
-        else {
+        } else {
             result = Collections.emptyList();
         }
 

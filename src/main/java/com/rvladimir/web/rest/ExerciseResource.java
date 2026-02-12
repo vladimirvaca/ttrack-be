@@ -19,9 +19,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller("/exercise")
 @Tag(name = "Exercise")
+@Slf4j
 @AllArgsConstructor
 public class ExerciseResource {
 
@@ -35,7 +37,14 @@ public class ExerciseResource {
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExerciseDTO.class))
     )
     public HttpResponse<ExerciseDTO> create(@Body @Valid ExerciseDTO exerciseDTO) {
-        return HttpResponse.created(exerciseService.create(exerciseDTO));
+        log.info("Creating exercise with name: {}", exerciseDTO.getName());
+        ExerciseDTO created = exerciseService.create(exerciseDTO);
+        if (created == null) {
+            log.warn("Exercise creation failed for name: {}", exerciseDTO.getName());
+        } else {
+            log.info("Exercise created successfully: id={}, name={}", created.getId(), created.getName());
+        }
+        return HttpResponse.created(created);
     }
 
     @Get
@@ -46,6 +55,14 @@ public class ExerciseResource {
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
     )
     public HttpResponse<Page<ExerciseDTO>> getAll(Pageable pageable) {
-        return HttpResponse.ok(exerciseService.getAll(pageable));
+        log.info("Retrieving all exercises with pageable: {}", pageable);
+        Page<ExerciseDTO> page = exerciseService.getAll(pageable);
+        if (page == null || page.isEmpty()) {
+            log.warn("No exercises found for pageable: {}", pageable);
+        } else {
+            log.info("Found {} exercises.", page.getContent().size());
+        }
+        return HttpResponse.ok(page);
     }
+
 }

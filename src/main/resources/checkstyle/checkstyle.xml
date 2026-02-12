@@ -184,7 +184,7 @@
 
         <!-- Right curly brace placement -->
         <module name="RightCurly">
-            <property name="option" value="alone"/>
+            <property name="option" value="same"/>
             <property name="tokens" value="LITERAL_TRY,LITERAL_CATCH,LITERAL_FINALLY,LITERAL_IF,LITERAL_ELSE,LITERAL_DO,LITERAL_WHILE,LITERAL_FOR,LITERAL_SWITCH,CLASS_DEF,METHOD_DEF,ENUM_DEF,INTERFACE_DEF,ANNOTATION_DEF,RECORD_DEF"/>
         </module>
 
