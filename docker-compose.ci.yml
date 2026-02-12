@@ -31,6 +31,13 @@ services:
     restart: unless-stopped
     ports:
       - '${APP_PORT:-8080}:8080'
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-region: "us-east-1"
+        awslogs-group: "ttrack-app"
+        awslogs-stream: "backend"
+        awslogs-create-group: "true"
     environment:
       # Database Configuration
       DATASOURCES_DEFAULT_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-ttrack-db}
