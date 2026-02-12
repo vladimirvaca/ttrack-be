@@ -95,6 +95,9 @@ dependencies {
     // Password hashing library (BCrypt)
     implementation("org.mindrot:jbcrypt:0.4")
 
+    // JSON logging for CloudWatch
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
+
     // Unit test dependencies
     testAnnotationProcessor("io.micronaut:micronaut-inject-java")
     testImplementation("io.micronaut:micronaut-http-client")
