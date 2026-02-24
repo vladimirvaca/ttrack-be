@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.security.SecuritySchemes;
 
 @OpenAPIDefinition(
     info = @Info(
@@ -21,15 +22,27 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
         )
     ),
     security = {
-        @SecurityRequirement(name = "cookieAuth")
+        @SecurityRequirement(name = "cookieAuth"),
+        @SecurityRequirement(name = "bearerAuth")
     }
 )
-@SecurityScheme(
-    name = "cookieAuth",
-    type = SecuritySchemeType.APIKEY,
-    in = SecuritySchemeIn.COOKIE,
-    paramName = "access_token",
-    description = "JWT stored in an HttpOnly cookie."
+@SecuritySchemes(
+    {
+        @SecurityScheme(
+            name = "cookieAuth",
+            type = SecuritySchemeType.APIKEY,
+            in = SecuritySchemeIn.COOKIE,
+            paramName = "access_token",
+            description = "JWT stored in an HttpOnly cookie (web clients)."
+        ),
+        @SecurityScheme(
+            name = "bearerAuth",
+            type = SecuritySchemeType.HTTP,
+            scheme = "bearer",
+            bearerFormat = "JWT",
+            description = "JWT Bearer token (mobile clients). Use the token returned by /auth/mobile-login."
+        )
+    }
 )
 public final class Application {
 
