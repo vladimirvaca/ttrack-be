@@ -16,18 +16,19 @@ import jakarta.inject.Inject;
 
 import java.util.Map;
 
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-
+/**
+ * End-to-end tests for the health endpoint.
+ */
 @MicronautTest
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class HealthControllerTest implements TestPropertyProvider {
+class HealthControllerE2eTest implements TestPropertyProvider {
 
     @Container
     static PostgreSQLContainer<?> postgres = PostgresTestContainer.getInstance();

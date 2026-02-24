@@ -31,12 +31,12 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration test for UserResource.
+ * End-to-end tests for UserResource.
  */
 @MicronautTest(transactional = false)
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class UserResourceIntegrationTest implements TestPropertyProvider {
+class UserResourceE2eTest implements TestPropertyProvider {
 
     private static final String TEST_JOHN = "John";
     private static final String TEST_DOE = "Doe";
@@ -314,3 +314,4 @@ class UserResourceIntegrationTest implements TestPropertyProvider {
         assertThat(userCount).isEqualTo(EXPECTED_USER_COUNT_THREE);
     }
 }
+

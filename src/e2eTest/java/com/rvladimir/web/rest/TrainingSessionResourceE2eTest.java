@@ -33,12 +33,12 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration test for TrainingSessionResource.
+ * End-to-end tests for TrainingSessionResource.
  */
 @MicronautTest(transactional = false)
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TrainingSessionResourceIntegrationTest implements TestPropertyProvider {
+class TrainingSessionResourceE2eTest implements TestPropertyProvider {
 
     private static final String TEST_USER_EMAIL = "john.doe@example.com";
     private static final String TEST_USER_EMAIL_2 = "jane.smith@example.com";
@@ -204,3 +204,4 @@ class TrainingSessionResourceIntegrationTest implements TestPropertyProvider {
         return userRepository.save(TestDataFactory.createUser(email));
     }
 }
+

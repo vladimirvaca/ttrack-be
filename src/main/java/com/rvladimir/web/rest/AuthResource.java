@@ -2,9 +2,11 @@ package com.rvladimir.web.rest;
 
 import com.rvladimir.service.AuthService;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.TokenResponseDTO;
 
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
@@ -40,7 +42,7 @@ public class AuthResource {
     )
     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials.")
     @Operation(summary = "User Login", description = "Authenticates a user and sets a JWT cookie.")
-    @Post(uri = "/login", consumes = "application/json")
+    @Post(uri = "/login", consumes = MediaType.APPLICATION_JSON)
     public HttpResponse<Void> login(@Body @Valid LoginDTO loginDTO) {
         log.info("Login attempt for user: {}", loginDTO.getEmail());
 
@@ -55,6 +57,31 @@ public class AuthResource {
         Cookie authCookie = buildAuthCookie(token);
         log.info("Login successful for user: {}. JWT cookie set.", loginDTO.getEmail());
         return HttpResponse.<Void>noContent().cookie(authCookie);
+    }
+
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successful login. JWT is returned in the response body."
+    )
+    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials.")
+    @Operation(
+        summary = "Mobile User Login",
+        description = "Authenticates a user and returns a JWT token in the response body for mobile clients."
+    )
+    @Post(uri = "/mobile-login", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
+    public HttpResponse<TokenResponseDTO> mobileLogin(@Body @Valid LoginDTO loginDTO) {
+        log.info("Mobile login attempt for user: {}", loginDTO.getEmail());
+
+        String token;
+        try {
+            token = authService.login(loginDTO);
+        } catch (Exception ex) {
+            log.warn("Mobile login failed for user: {} - {}", loginDTO.getEmail(), ex.getMessage());
+            return HttpResponse.unauthorized();
+        }
+
+        log.info("Mobile login successful for user: {}. JWT token returned.", loginDTO.getEmail());
+        return HttpResponse.ok(new TokenResponseDTO(token, "Bearer"));
     }
 
     private Cookie buildAuthCookie(String token) {

@@ -6,7 +6,7 @@ micronaut:
     authentication: cookie
     token:
       bearer:
-        enabled: false
+        enabled: true
       jwt:
         enabled: true
         generator:
@@ -34,6 +34,10 @@ micronaut:
         access:
           - isAnonymous()
       - pattern: /auth/login
+        httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /auth/mobile-login
         httpMethod: POST
         access:
           - isAnonymous()

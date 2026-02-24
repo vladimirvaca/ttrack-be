@@ -8,10 +8,12 @@ import static org.mockito.Mockito.when;
 
 import com.rvladimir.service.AuthService;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.TokenResponseDTO;
 
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 class AuthResourceTest {
 
     private static final String ENDPOINT_AUTH_LOGIN = "/auth/login";
+    private static final String ENDPOINT_AUTH_MOBILE_LOGIN = "/auth/mobile-login";
     private static final String COOKIE_NAME = "access_token";
     private static final String TEST_EMAIL = "john.doe@example.com";
     private static final String TEST_PASSWORD = "password123";
@@ -73,6 +76,92 @@ class AuthResourceTest {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_LOGIN, loginDTO);
         assertThatThrownBy(() -> client.toBlocking().exchange(request))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
+
+    @Test
+    void testMobileLoginSuccessReturnsToken() {
+        // Given
+        LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
+        when(authService.login(any(LoginDTO.class))).thenReturn(TOKEN_VALUE);
+
+        // When
+        HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
+            .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> response =
+            client.toBlocking().exchange(request, TokenResponseDTO.class);
+
+        // Then
+        assertThat(response.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getAccessToken()).isEqualTo(TOKEN_VALUE);
+        assertThat(response.body().getTokenType()).isEqualTo("Bearer");
+    }
+
+    @Test
+    void testMobileLoginDoesNotSetCookie() {
+        // Given
+        LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
+        when(authService.login(any(LoginDTO.class))).thenReturn(TOKEN_VALUE);
+
+        // When
+        HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
+            .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> response =
+            client.toBlocking().exchange(request, TokenResponseDTO.class);
+
+        // Then
+        assertThat(response.getCookies().get(COOKIE_NAME)).isNull();
+    }
+
+    @Test
+    void testMobileLoginInvalidCredentialsReturns401() {
+        // Given
+        LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
+        when(authService.login(any(LoginDTO.class)))
+            .thenThrow(new io.micronaut.http.exceptions.HttpStatusException(
+                HttpStatus.UNAUTHORIZED, "Invalid email or password."));
+
+        // When & Then
+        HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
+            .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.getCode());
+            });
+    }
+
+    @Test
+    void testMobileLoginValidationErrorEmptyEmailReturns400() {
+        // Given
+        LoginDTO loginDTO = new LoginDTO("", TEST_PASSWORD);
+
+        // When & Then
+        HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
+            .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
+
+    @Test
+    void testMobileLoginValidationErrorEmptyPasswordReturns400() {
+        // Given
+        LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, "");
+
+        // When & Then
+        HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
+            .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;

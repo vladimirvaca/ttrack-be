@@ -29,10 +29,10 @@ micronaut:
         paths: "classpath:META-INF/swagger/views/swagger-ui"
   security:
     enabled: true
-    authentication: cookie
+    authentication: idtoken
     token:
       bearer:
-        enabled: false
+        enabled: true
       jwt:
         enabled: true
         generator:
@@ -60,6 +60,10 @@ micronaut:
         access:
           - isAnonymous()
       - pattern: /auth/login
+        httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /auth/mobile-login
         httpMethod: POST
         access:
           - isAnonymous()

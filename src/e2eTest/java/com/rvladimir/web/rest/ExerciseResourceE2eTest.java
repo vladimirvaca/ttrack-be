@@ -30,12 +30,12 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration test for ExerciseResource.
+ * End-to-end tests for ExerciseResource.
  */
 @MicronautTest(transactional = false)
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ExerciseResourceIntegrationTest implements TestPropertyProvider {
+class ExerciseResourceE2eTest implements TestPropertyProvider {
 
     private static final String ENDPOINT_EXERCISE = "/exercise";
     private static final String TEST_NAME = "Push-ups";
@@ -159,3 +159,4 @@ class ExerciseResourceIntegrationTest implements TestPropertyProvider {
         assertThat(response.body().getTotalSize()).isGreaterThanOrEqualTo(2);
     }
 }
+

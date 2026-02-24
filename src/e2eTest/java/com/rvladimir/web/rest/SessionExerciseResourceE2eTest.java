@@ -41,12 +41,12 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Integration test for SessionExerciseResource.
+ * End-to-end tests for SessionExerciseResource.
  */
 @MicronautTest(transactional = false)
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SessionExerciseResourceIntegrationTest implements TestPropertyProvider {
+class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     private static final String ENDPOINT_CREATE = "/session-exercise/training-sessions/%d/session-exercise";
     private static final String ENDPOINT_GET_BY_SESSION = "/session-exercise/training-session/%d";
     private static final long EXPECTED_SESSION_EXERCISE_COUNT_ONE = 1L;
@@ -260,3 +260,4 @@ class SessionExerciseResourceIntegrationTest implements TestPropertyProvider {
         assertThat(result.size()).isGreaterThanOrEqualTo(2);
     }
 }
+

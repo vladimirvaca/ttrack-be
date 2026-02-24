@@ -4,6 +4,8 @@ import com.rvladimir.domain.User;
 
 import java.time.LocalDate;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 /**
  * Factory class for creating test data objects.
  * Provides reusable methods to create test entities with default or custom values.
@@ -47,6 +49,26 @@ public final class TestDataFactory {
             email,
             DEFAULT_USER_PASSWORD,
             role
+        );
+    }
+
+    /**
+     * Creates a user with the specified email and a BCrypt-hashed version of the given plain-text password.
+     * Use this factory method when the user needs to authenticate through the login endpoints in tests.
+     *
+     * @param email the user's email
+     * @param plainPassword the plain-text password to hash
+     * @return a new User instance with a hashed password
+     */
+    public static User createUserWithPassword(String email, String plainPassword) {
+        return new User(
+            null,
+            DEFAULT_USER_NAME,
+            DEFAULT_USER_LASTNAME,
+            LocalDate.of(DEFAULT_BIRTH_YEAR, DEFAULT_BIRTH_MONTH, DEFAULT_BIRTH_DAY),
+            email,
+            BCrypt.hashpw(plainPassword, BCrypt.gensalt()),
+            User.Role.USER
         );
     }
 }
