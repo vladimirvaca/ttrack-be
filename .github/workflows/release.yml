@@ -176,9 +176,10 @@ jobs:
           git checkout v${{ steps.extract_version.outputs.VERSION }}
           export DOCKER_IMAGE="ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.VERSION }}"
           export JWT_SECRET="${{ secrets.DEPLOY_JWT_SECRET }}"
+          export JWT_REFRESH_SECRET="${{ secrets.DEPLOY_JWT_REFRESH_SECRET }}"
           sudo docker compose -f docker-compose.ci.yml pull
           sudo docker compose -f docker-compose.ci.yml down
-          sudo DOCKER_IMAGE="$DOCKER_IMAGE" JWT_SECRET="$JWT_SECRET" docker compose -f docker-compose.ci.yml up -d
+          sudo DOCKER_IMAGE="$DOCKER_IMAGE" JWT_SECRET="$JWT_SECRET" JWT_REFRESH_SECRET="$JWT_REFRESH_SECRET" docker compose -f docker-compose.ci.yml up -d
           sudo docker compose -f docker-compose.ci.yml logs --tail=50
           EOF
 

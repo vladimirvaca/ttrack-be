@@ -464,14 +464,44 @@ Then verifies:
 
 Before deploying, configure these secrets in **GitHub → Settings → Secrets and variables → Actions**:
 
-| Secret Name | Example Value | Purpose |
-|-------------|---------------|---------|
-| `DEPLOY_SSH_PRIVATE_KEY` | `-----BEGIN PRIVATE KEY-----...` | SSH key for server authentication (Ed25519 or RSA-4096, NO passphrase) |
-| `DEPLOY_SERVER_HOST` | `prod.example.com` | Hostname or IP address of production server |
-| `DEPLOY_SSH_USER` | `deploy` | Dedicated deployment user on server (recommended: not root) |
-| `DEPLOY_APP_DIR` | `/opt/ttrack-be` | Application directory on server where code is deployed |
-| `DEPLOY_JWT_SECRET` | `y9KzN4pQ2wX8vL1mR5tJ...` (64+ chars) | Secret for signing **access tokens** in production |
-| `DEPLOY_JWT_REFRESH_SECRET` | `aB3cD4eF5gH6iJ7kL8mN...` (64+ chars) | Dedicated secret for signing **refresh tokens** in production (recommended: different from access token secret) |
+> **Note:** `GITHUB_TOKEN` is automatically provided by GitHub Actions — you do **not** need to create it.
+
+#### SSH / Deployment Secrets
+
+| Secret Name | Example Value | Maps to (on server) | Purpose |
+|-------------|---------------|---------------------|---------|
+| `DEPLOY_SSH_PRIVATE_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | — | Private SSH key used by the pipeline to connect to the server (Ed25519 or RSA-4096, **no passphrase**) |
+| `DEPLOY_SERVER_HOST` | `prod.example.com` | — | Hostname or IP address of the production server |
+| `DEPLOY_SSH_USER` | `deploy` | — | Dedicated deployment user on the server (avoid root) |
+| `DEPLOY_APP_DIR` | `/opt/ttrack-be` | — | Absolute path on the server where the repo is checked out |
+
+#### Application Secrets
+
+| Secret Name | Example Value | Maps to (docker-compose env var) | Purpose |
+|-------------|---------------|----------------------------------|---------|
+| `DEPLOY_JWT_SECRET` | `y9KzN4pQ2wX8vL1mR5tJ...` (64+ chars) | `JWT_SECRET` → `micronaut.security.token.jwt.signatures.secret.generator.secret` | Signing key for **access tokens** (HS256). Must be ≥ 32 characters. |
+| `DEPLOY_JWT_REFRESH_SECRET` | `aB3cD4eF5gH6iJ7kL8mN...` (64+ chars) | `JWT_REFRESH_SECRET` → `micronaut.security.token.jwt.generator.refresh-token.secret` | Signing key for **refresh tokens**. Use a **different** value from `DEPLOY_JWT_SECRET` for stronger security isolation. |
+
+#### How secrets flow into the application
+
+```
+GitHub Secret              →  SSH export variable  →  docker-compose env var  →  Micronaut config key
+─────────────────────────────────────────────────────────────────────────────────────────────────────
+DEPLOY_JWT_SECRET          →  JWT_SECRET           →  JWT_SECRET              →  micronaut.security.token.jwt.signatures.secret.generator.secret
+DEPLOY_JWT_REFRESH_SECRET  →  JWT_REFRESH_SECRET   →  JWT_REFRESH_SECRET      →  micronaut.security.token.jwt.generator.refresh-token.secret
+```
+
+> **Optional docker-compose variables** — these have safe defaults and can be left unset for most deployments. Configure them via the server `.env` file or as additional GitHub secrets if needed:
+>
+> | docker-compose env var | Default | Description |
+> |------------------------|---------|-------------|
+> | `POSTGRES_DB` | `ttrack-db` | PostgreSQL database name |
+> | `POSTGRES_USER` | `ttrack-user` | PostgreSQL username |
+> | `POSTGRES_PASSWORD` | `ttrack-password` | PostgreSQL password |
+> | `POSTGRES_PORT` | `5432` | Host port mapped to PostgreSQL |
+> | `APP_PORT` | `8080` | Host port mapped to the application |
+> | `JWT_ACCESS_TOKEN_EXPIRATION` | `3600` | Access token lifetime in seconds |
+> | `JWT_REFRESH_TOKEN_EXPIRATION` | `86400` | Refresh token lifetime in seconds |
 
 ### Generating Required Secrets
 
@@ -556,7 +586,7 @@ docker-compose -f docker-compose.ci.yml restart app
 
 **Deployment Failed:**
 - Check GitHub Actions logs for error details
-- Verify all 5 secrets are configured correctly
+- Verify all 6 secrets are configured correctly
 - Ensure server has Docker and Docker Compose installed
 
 **Health Check Failed:**
@@ -577,7 +607,7 @@ docker-compose -f docker-compose.ci.yml restart app
   1. Validate (Checkstyle code quality)
   2. Test (unit, integration, e2e in parallel)
   3. Build Docker image
-- **For details, see `.github/workflows/ci_cd_pipeline.yml`**
+- **For details, see `.github/workflows/ci.yml`**
 
 ### Release Pipeline (on tag push v*)
 - **Triggers:** When you push a tag matching `v*` (e.g., `git push origin v0.0.13`)
@@ -587,7 +617,7 @@ docker-compose -f docker-compose.ci.yml restart app
   3. 📝 Create Release - GitHub Release created with changelog
   4. 🚀 Deploy to Production - **SSH to server, pull code/image, restart with docker-compose**
   5. ✨ Verify Health - Confirm containers running and /health endpoint responding
-- **Requirements:** 5 GitHub secrets must be configured (see Release Workflow section)
+- **Requirements:** 6 GitHub secrets must be configured (see Release Workflow section)
 - **For details, see `.github/workflows/release.yml`**
 
 ### Artifacts & Outputs
