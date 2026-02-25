@@ -13,7 +13,9 @@ import com.rvladimir.service.dto.LoginDTO;
 
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.exceptions.HttpStatusException;
+import io.micronaut.security.token.generator.RefreshTokenGenerator;
 import io.micronaut.security.token.generator.TokenGenerator;
+import io.micronaut.security.token.validator.RefreshTokenValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,12 @@ class AuthServiceImplTest {
 
     @Mock
     private TokenGenerator tokenGenerator;
+
+    @Mock
+    private RefreshTokenGenerator refreshTokenGenerator;
+
+    @Mock
+    private RefreshTokenValidator refreshTokenValidator;
 
     @InjectMocks
     private AuthServiceImpl authService;

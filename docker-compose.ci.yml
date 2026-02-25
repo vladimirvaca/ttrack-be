@@ -46,9 +46,22 @@ services:
       DATASOURCES_DEFAULT_DIALECT: POSTGRES
 
       # JWT Configuration
+      # JWT_SECRET: Signs access tokens (HS256). Must be ≥ 32 characters (256 bits).
+      # Change this to a long random string in production. Example: openssl rand -base64 48
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+
+      # JWT_REFRESH_SECRET: Signs refresh tokens. Use a DIFFERENT value from JWT_SECRET
+      # for stronger security isolation between token types.
+      # Example: openssl rand -base64 48
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-this-refresh-secret-in-production}
+
+      # JWT_ACCESS_TOKEN_EXPIRATION: Lifetime of the access token in seconds.
+      # Default: 3600 (1 hour). Keep short to limit exposure on token theft.
       JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-3600}
+
+      # JWT_REFRESH_TOKEN_EXPIRATION: Lifetime of the refresh token in seconds.
+      # Default: 86400 (24 hours). Mobile clients use this to silently re-authenticate
+      # via POST /auth/mobile-refresh without requiring the user to log in again.
       JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-86400}
 
       # Application Configuration

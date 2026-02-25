@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.rvladimir.repository.UserRepository;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.RefreshTokenRequestDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 import com.rvladimir.test.PostgresTestContainer;
 import com.rvladimir.test.TestDataFactory;
@@ -43,6 +44,8 @@ class AuthResourceE2eTest implements TestPropertyProvider {
 
     private static final String ENDPOINT_AUTH_LOGIN = "/auth/login";
     private static final String ENDPOINT_AUTH_MOBILE_LOGIN = "/auth/mobile-login";
+    private static final String ENDPOINT_AUTH_MOBILE_REFRESH = "/auth/mobile-refresh";
+    private static final String ENDPOINT_EXERCISE = "/exercise";
     private static final String COOKIE_NAME = "access_token";
     private static final String BEARER_TOKEN_TYPE = "Bearer";
     private static final String TEST_EMAIL = "john.doe@example.com";
@@ -159,6 +162,7 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         assertThat(response.body()).isNotNull();
         assertThat(response.body().getAccessToken()).isNotBlank();
         assertThat(response.body().getTokenType()).isEqualTo(BEARER_TOKEN_TYPE);
+        assertThat(response.body().getRefreshToken()).isNotBlank();
     }
 
     @Test
@@ -193,7 +197,7 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         String token = loginResponse.body().getAccessToken();
 
         // Then - use Bearer token on a protected endpoint
-        MutableHttpRequest<Object> protectedRequest = HttpRequest.GET("/exercise")
+        MutableHttpRequest<Object> protectedRequest = HttpRequest.GET(ENDPOINT_EXERCISE)
             .bearerAuth(token);
         HttpResponse<Object> protectedResponse =
             client.toBlocking().exchange(protectedRequest, Object.class);
@@ -263,6 +267,124 @@ class AuthResourceE2eTest implements TestPropertyProvider {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
                 assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
             });
+    }
+
+    // --- Mobile refresh ---
+
+    @Test
+    void testMobileRefreshEndToEndSuccessReturnsNewTokenPair() {
+        // Given
+        userRepository.save(TestDataFactory.createUserWithPassword(TEST_EMAIL, TEST_PASSWORD));
+        String refreshToken = obtainRefreshToken();
+
+        // When
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO(refreshToken);
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> response =
+            client.toBlocking().exchange(request, TokenResponseDTO.class);
+
+        // Then
+        assertThat(response.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getAccessToken()).isNotBlank();
+        assertThat(response.body().getTokenType()).isEqualTo(BEARER_TOKEN_TYPE);
+        assertThat(response.body().getRefreshToken()).isNotBlank();
+    }
+
+    @Test
+    void testMobileRefreshEndToEndNewAccessTokenIsUsableForAuthenticatedRequests() {
+        // Given
+        userRepository.save(TestDataFactory.createUserWithPassword(TEST_EMAIL, TEST_PASSWORD));
+        String refreshToken = obtainRefreshToken();
+
+        // When - refresh the tokens
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO(refreshToken);
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> refreshResponse =
+            client.toBlocking().exchange(request, TokenResponseDTO.class);
+
+        assertThat(refreshResponse.body()).isNotNull();
+        String newAccessToken = refreshResponse.body().getAccessToken();
+
+        // Then - use the new access token on a protected endpoint
+        MutableHttpRequest<Object> protectedRequest = HttpRequest.GET(ENDPOINT_EXERCISE)
+            .bearerAuth(newAccessToken);
+        HttpResponse<Object> protectedResponse =
+            client.toBlocking().exchange(protectedRequest, Object.class);
+        assertThat(protectedResponse.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
+    }
+
+    @Test
+    void testMobileRefreshEndToEndNewRefreshTokenIsDifferentFromOriginal() {
+        // Given
+        userRepository.save(TestDataFactory.createUserWithPassword(TEST_EMAIL, TEST_PASSWORD));
+        String originalRefreshToken = obtainRefreshToken();
+
+        // When
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO(originalRefreshToken);
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> response =
+            client.toBlocking().exchange(request, TokenResponseDTO.class);
+
+        // Then - rotated refresh token should be a valid, non-empty token
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getRefreshToken()).isNotBlank();
+    }
+
+    @Test
+    void testMobileRefreshEndToEndInvalidTokenReturns401() {
+        // Given
+        String invalidRefreshToken = "this.is.not.a.valid.token";
+
+        // When & Then
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO(invalidRefreshToken);
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.getCode());
+            });
+    }
+
+    @Test
+    void testMobileRefreshEndToEndEmptyTokenReturns400() {
+        // Given
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO("");
+
+        // When & Then
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
+
+    /**
+     * Helper method: performs a mobile login and returns the refresh token from the response.
+     *
+     * @return the refresh token string
+     */
+    private String obtainRefreshToken() {
+        LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
+        HttpRequest<LoginDTO> loginRequest = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
+            .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> loginResponse =
+            client.toBlocking().exchange(loginRequest, TokenResponseDTO.class);
+        assertThat(loginResponse.body()).isNotNull();
+        return loginResponse.body().getRefreshToken();
     }
 }
 

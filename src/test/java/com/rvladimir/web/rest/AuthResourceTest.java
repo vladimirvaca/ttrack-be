@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.rvladimir.service.AuthService;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.RefreshTokenRequestDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 
 import io.micronaut.http.HttpRequest;
@@ -33,10 +34,13 @@ class AuthResourceTest {
 
     private static final String ENDPOINT_AUTH_LOGIN = "/auth/login";
     private static final String ENDPOINT_AUTH_MOBILE_LOGIN = "/auth/mobile-login";
+    private static final String ENDPOINT_AUTH_MOBILE_REFRESH = "/auth/mobile-refresh";
     private static final String COOKIE_NAME = "access_token";
     private static final String TEST_EMAIL = "john.doe@example.com";
     private static final String TEST_PASSWORD = "password123";
     private static final String TOKEN_VALUE = "jwt-token";
+    private static final String REFRESH_TOKEN_VALUE = "refresh-jwt-token";
+    private static final String BEARER_TOKEN_TYPE = "Bearer";
 
     @Inject
     @Client("/")
@@ -87,7 +91,8 @@ class AuthResourceTest {
     void testMobileLoginSuccessReturnsToken() {
         // Given
         LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
-        when(authService.login(any(LoginDTO.class))).thenReturn(TOKEN_VALUE);
+        TokenResponseDTO tokenResponse = new TokenResponseDTO(TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE);
+        when(authService.mobileLogin(any(LoginDTO.class))).thenReturn(tokenResponse);
 
         // When
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
@@ -99,14 +104,16 @@ class AuthResourceTest {
         assertThat(response.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
         assertThat(response.body()).isNotNull();
         assertThat(response.body().getAccessToken()).isEqualTo(TOKEN_VALUE);
-        assertThat(response.body().getTokenType()).isEqualTo("Bearer");
+        assertThat(response.body().getTokenType()).isEqualTo(BEARER_TOKEN_TYPE);
+        assertThat(response.body().getRefreshToken()).isEqualTo(REFRESH_TOKEN_VALUE);
     }
 
     @Test
     void testMobileLoginDoesNotSetCookie() {
         // Given
         LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
-        when(authService.login(any(LoginDTO.class))).thenReturn(TOKEN_VALUE);
+        TokenResponseDTO tokenResponse = new TokenResponseDTO(TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE);
+        when(authService.mobileLogin(any(LoginDTO.class))).thenReturn(tokenResponse);
 
         // When
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
@@ -122,7 +129,7 @@ class AuthResourceTest {
     void testMobileLoginInvalidCredentialsReturns401() {
         // Given
         LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
-        when(authService.login(any(LoginDTO.class)))
+        when(authService.mobileLogin(any(LoginDTO.class)))
             .thenThrow(new io.micronaut.http.exceptions.HttpStatusException(
                 HttpStatus.UNAUTHORIZED, "Invalid email or password."));
 
@@ -168,4 +175,64 @@ class AuthResourceTest {
                 assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
             });
     }
+
+    @Test
+    void testMobileRefreshSuccessReturnsNewTokenPair() {
+        // Given
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO(REFRESH_TOKEN_VALUE);
+        TokenResponseDTO tokenResponse = new TokenResponseDTO(TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE);
+        when(authService.refresh(REFRESH_TOKEN_VALUE)).thenReturn(tokenResponse);
+
+        // When
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        HttpResponse<TokenResponseDTO> response =
+            client.toBlocking().exchange(request, TokenResponseDTO.class);
+
+        // Then
+        assertThat(response.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getAccessToken()).isEqualTo(TOKEN_VALUE);
+        assertThat(response.body().getRefreshToken()).isEqualTo(REFRESH_TOKEN_VALUE);
+        assertThat(response.body().getTokenType()).isEqualTo(BEARER_TOKEN_TYPE);
+    }
+
+    @Test
+    void testMobileRefreshInvalidTokenReturns401() {
+        // Given
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO(REFRESH_TOKEN_VALUE);
+        when(authService.refresh(REFRESH_TOKEN_VALUE))
+            .thenThrow(new io.micronaut.http.exceptions.HttpStatusException(
+                HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token"));
+
+        // When & Then
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.getCode());
+            });
+    }
+
+    @Test
+    void testMobileRefreshValidationErrorEmptyTokenReturns400() {
+        // Given
+        RefreshTokenRequestDTO refreshRequest = new RefreshTokenRequestDTO("");
+
+        // When & Then
+        HttpRequest<RefreshTokenRequestDTO> request =
+            HttpRequest.POST(ENDPOINT_AUTH_MOBILE_REFRESH, refreshRequest)
+                .accept(MediaType.APPLICATION_JSON_TYPE);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
 }
+

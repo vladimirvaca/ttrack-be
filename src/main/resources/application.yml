@@ -75,6 +75,10 @@ micronaut:
         httpMethod: POST
         access:
           - isAnonymous()
+      - pattern: /auth/mobile-refresh
+        httpMethod: POST
+        access:
+          - isAnonymous()
       - pattern: /user/create
         httpMethod: POST
         access:

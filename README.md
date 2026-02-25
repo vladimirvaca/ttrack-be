@@ -119,11 +119,71 @@ All JWT values are driven by environment variables with safe local-dev defaults.
 **Public Endpoints:**
 - `/swagger/**` - Swagger API documentation
 - `/swagger-ui/**` - Swagger UI interface
-- `/auth/login` - User authentication
-- `/auth/refresh` - Exchange a refresh token for a new access token
+- `/auth/login` - User authentication (cookie-based, for web clients)
+- `/auth/refresh` - Exchange a refresh token for a new access token (cookie flow)
+- `/auth/mobile-login` - Mobile user authentication (returns access + refresh tokens in JSON body)
+- `/auth/mobile-refresh` - Mobile token refresh (validates refresh token, returns new token pair)
 - `/user/create` - User registration
 
 All other endpoints require JWT authentication via the auth cookie.
+
+### Mobile Authentication & Token Refresh
+
+For **mobile clients** that cannot use HttpOnly cookies, the API exposes a JSON-body token flow:
+
+#### `POST /auth/mobile-login`
+
+Authenticates a user and returns **both** an access token and a refresh token in the response body.
+
+**Request:**
+```json
+{
+  "email": "tony.stark@gmail.com",
+  "password": "12345"
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+The client should store both tokens securely (e.g. in encrypted storage). Include the `accessToken` in subsequent requests as `Authorization: Bearer <accessToken>`.
+
+#### `POST /auth/mobile-refresh`
+
+Validates the given refresh token and issues a **new access token** together with a **rotated refresh token** (one-time use). The old refresh token is invalidated on next validation.
+
+**Request:**
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+Returns `401 Unauthorized` if the refresh token is invalid, malformed, or expired.
+
+**Recommended mobile flow:**
+1. Call `/auth/mobile-login` → store `accessToken` and `refreshToken`.
+2. Use `accessToken` for all API calls (`Authorization: Bearer <token>`).
+3. When the API returns `401`, call `/auth/mobile-refresh` with the stored `refreshToken`.
+4. Replace both stored tokens with the new pair from the response.
+5. Retry the original request with the new `accessToken`.
+
+
 
 ### 3. Build the Project
 

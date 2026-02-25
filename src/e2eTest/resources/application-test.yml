@@ -12,6 +12,10 @@ micronaut:
         generator:
           access-token:
             expiration: 3600
+          refresh-token:
+            enabled: true
+            secret: "TestRefreshSecret!!TestRefreshSecret!!TestRefreshSecret!!"
+            expiration: 86400
         signatures:
           secret:
             generator:
@@ -38,6 +42,10 @@ micronaut:
         access:
           - isAnonymous()
       - pattern: /auth/mobile-login
+        httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /auth/mobile-refresh
         httpMethod: POST
         access:
           - isAnonymous()
