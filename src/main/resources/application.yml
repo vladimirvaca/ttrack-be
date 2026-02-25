@@ -37,11 +37,15 @@ micronaut:
         enabled: true
         generator:
           access-token:
-            expiration: 3600
+            expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600}
+          refresh-token:
+            enabled: true
+            secret: ${JWT_REFRESH_SECRET:${JWT_SECRET:"PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"}}
+            expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:86400}
         signatures:
           secret:
             generator:
-              secret: "PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"
+              secret: ${JWT_SECRET:"PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"}
       cookie:
         enabled: true
         cookie-name: ${JWT_COOKIE_NAME:access_token}
@@ -61,6 +65,10 @@ micronaut:
           - isAnonymous()
       - pattern: /auth/login
         httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /auth/refresh
+        httpMethod: GET
         access:
           - isAnonymous()
       - pattern: /auth/mobile-login

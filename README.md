@@ -75,18 +75,22 @@ datasources:
 ```yaml
 micronaut:
   security:
-    authentication: cookie
+    authentication: idtoken
     token:
       bearer:
-        enabled: false
+        enabled: true
       jwt:
         generator:
           access-token:
-            expiration: 3600  # 1 hour
+            expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600}   # Default: 1 hour
+          refresh-token:
+            enabled: true
+            secret: ${JWT_REFRESH_SECRET:${JWT_SECRET:"PlsChangeThis!!..."}}
+            expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:86400} # Default: 24 hours
         signatures:
           secret:
             generator:
-              secret: "PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"
+              secret: ${JWT_SECRET:"PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!PlsChangeThis!!"}
       cookie:
         enabled: true
         cookie-name: ${JWT_COOKIE_NAME:access_token}
@@ -96,12 +100,27 @@ micronaut:
         cookie-max-age: ${JWT_COOKIE_MAX_AGE:3600s}
 ```
 
-Important: Change the JWT secret in production environments.
+All JWT values are driven by environment variables with safe local-dev defaults.
+**Change all secrets in production environments.**
+
+#### Environment Variables Reference
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_SECRET` | `PlsChangeThis!!...` | Secret used to sign access tokens (HS256). Must be ≥ 256 bits (32+ chars). |
+| `JWT_REFRESH_SECRET` | falls back to `JWT_SECRET` | Dedicated secret for signing refresh tokens. Set this separately for stronger isolation. |
+| `JWT_ACCESS_TOKEN_EXPIRATION` | `3600` | Access token lifetime in **seconds** (default: 1 hour). |
+| `JWT_REFRESH_TOKEN_EXPIRATION` | `86400` | Refresh token lifetime in **seconds** (default: 24 hours). |
+| `JWT_COOKIE_NAME` | `access_token` | Name of the HttpOnly cookie carrying the access token. |
+| `JWT_COOKIE_SECURE` | `false` | Set to `true` in production (requires HTTPS). |
+| `JWT_COOKIE_SAME_SITE` | `Lax` | SameSite policy (`Lax`, `Strict`, or `None`). |
+| `JWT_COOKIE_MAX_AGE` | `3600s` | Cookie max-age (should match `JWT_ACCESS_TOKEN_EXPIRATION`). |
 
 **Public Endpoints:**
 - `/swagger/**` - Swagger API documentation
 - `/swagger-ui/**` - Swagger UI interface
 - `/auth/login` - User authentication
+- `/auth/refresh` - Exchange a refresh token for a new access token
 - `/user/create` - User registration
 
 All other endpoints require JWT authentication via the auth cookie.
@@ -370,7 +389,8 @@ The pipeline establishes a **secure SSH connection** to your production server a
 cd /opt/ttrack-be
 git checkout v0.0.13
 export DOCKER_IMAGE=ghcr.io/your-org/ttrack-be:0.0.13
-export JWT_SECRET=<your-secret>
+export JWT_SECRET=<your-access-token-secret>
+export JWT_REFRESH_SECRET=<your-refresh-token-secret>
 docker-compose -f docker-compose.ci.yml pull
 docker-compose -f docker-compose.ci.yml down
 docker-compose -f docker-compose.ci.yml up -d
@@ -380,7 +400,7 @@ Then verifies:
 - Containers are running: `docker-compose ps`
 - Application is healthy: `curl http://localhost:8080/health`
 
-### Required GitHub Secrets (5 Total)
+### Required GitHub Secrets (6 Total)
 
 Before deploying, configure these secrets in **GitHub → Settings → Secrets and variables → Actions**:
 
@@ -390,7 +410,8 @@ Before deploying, configure these secrets in **GitHub → Settings → Secrets a
 | `DEPLOY_SERVER_HOST` | `prod.example.com` | Hostname or IP address of production server |
 | `DEPLOY_SSH_USER` | `deploy` | Dedicated deployment user on server (recommended: not root) |
 | `DEPLOY_APP_DIR` | `/opt/ttrack-be` | Application directory on server where code is deployed |
-| `DEPLOY_JWT_SECRET` | `y9KzN4pQ2wX8vL1mR5tJ...` (64+ chars) | JWT secret for token signing in production |
+| `DEPLOY_JWT_SECRET` | `y9KzN4pQ2wX8vL1mR5tJ...` (64+ chars) | Secret for signing **access tokens** in production |
+| `DEPLOY_JWT_REFRESH_SECRET` | `aB3cD4eF5gH6iJ7kL8mN...` (64+ chars) | Dedicated secret for signing **refresh tokens** in production (recommended: different from access token secret) |
 
 ### Generating Required Secrets
 
@@ -404,9 +425,10 @@ ssh-keygen -t ed25519 -f ~/.ssh/ttrack_deploy -C "github-deploy" -N ""
 cat ~/.ssh/ttrack_deploy.pub | ssh deploy@prod.example.com "cat >> ~/.ssh/authorized_keys"
 ```
 
-**Generate JWT Secret:**
+**Generate JWT Secrets** (one for access tokens, one for refresh tokens):
 ```bash
-openssl rand -base64 32
+openssl rand -base64 48   # JWT_SECRET (access token)
+openssl rand -base64 48   # JWT_REFRESH_SECRET (refresh token)
 ```
 
 ### Step-by-Step Release Instructions
