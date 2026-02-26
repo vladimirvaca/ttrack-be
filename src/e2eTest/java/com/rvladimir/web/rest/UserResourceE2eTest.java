@@ -50,14 +50,12 @@ class UserResourceE2eTest implements TestPropertyProvider {
     private static final String TEST_ONE = "One";
     private static final String TEST_TWO = "Two";
     private static final String TEST_THREE = "Three";
-    private static final String TEST_ADMIN = "Admin";
     private static final String TEST_LASTNAME = "Lastname";
     private static final String TEST_EMAIL_JOHN = "john.doe@example.com";
     private static final String TEST_EMAIL_JANE = "jane.smith@example.com";
     private static final String TEST_EMAIL_DUPLICATE = "duplicate@example.com";
     private static final String TEST_EMAIL_INVALID = "not-an-email";
     private static final String TEST_EMAIL_TEST = "test@example.com";
-    private static final String TEST_EMAIL_ADMIN = "admin@example.com";
     private static final String TEST_EMAIL_USER1 = "user1@example.com";
     private static final String TEST_EMAIL_USER2 = "user2@example.com";
     private static final String TEST_EMAIL_USER3 = "user3@example.com";
@@ -67,10 +65,8 @@ class UserResourceE2eTest implements TestPropertyProvider {
     private static final String TEST_PASSWORD_3 = "password3";
     private static final String TEST_PASSWORD_GENERIC = "password";
     private static final String TEST_PLAIN_PASSWORD = "plainPassword";
-    private static final String TEST_ADMIN_PASSWORD = "adminPassword";
     private static final String BCRYPT_HASH_PREFIX = "$2a$";
     private static final String ENDPOINT_USER_CREATE = "/user/create";
-    private static final int BIRTH_YEAR_1980 = 1980;
     private static final int BIRTH_YEAR_1985 = 1985;
     private static final int BIRTH_YEAR_1990 = 1990;
     private static final int BIRTH_YEAR_1991 = 1991;
@@ -117,8 +113,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_DOE,
             LocalDate.of(BIRTH_YEAR_1990, BIRTH_MONTH_5, BIRTH_DAY_15),
             TEST_EMAIL_JOHN,
-            TEST_PASSWORD,
-            User.Role.USER
+            TEST_PASSWORD
         );
 
         // When
@@ -131,11 +126,12 @@ class UserResourceE2eTest implements TestPropertyProvider {
         assertThat(response.body().getName()).isEqualTo(TEST_JOHN);
         assertThat(response.body().getLastname()).isEqualTo(TEST_DOE);
         assertThat(response.body().getEmail()).isEqualTo(TEST_EMAIL_JOHN);
+        // role is always USER when created via this endpoint
         assertThat(response.body().getRole()).isEqualTo(User.Role.USER);
 
-        // Verify user was actually saved to database
-        boolean exists = userRepository.existsByEmail(TEST_EMAIL_JOHN);
-        assertThat(exists).isTrue();
+        // Verify user was actually saved to database with USER role
+        User savedUser = userRepository.findByEmail(TEST_EMAIL_JOHN).orElseThrow();
+        assertThat(savedUser.getRole()).isEqualTo(User.Role.USER);
     }
 
     @Test
@@ -146,8 +142,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_SMITH,
             LocalDate.of(BIRTH_YEAR_1985, BIRTH_MONTH_10, BIRTH_DAY_20),
             TEST_EMAIL_JANE,
-            TEST_PLAIN_PASSWORD,
-            User.Role.ADMIN
+            TEST_PLAIN_PASSWORD
         );
 
         // When
@@ -169,8 +164,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_USER,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_DUPLICATE,
-            TEST_PASSWORD_1,
-            User.Role.USER
+            TEST_PASSWORD_1
         );
 
         CreateUserDTO secondUser = new CreateUserDTO(
@@ -178,8 +172,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_USER,
             LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
             TEST_EMAIL_DUPLICATE,
-            TEST_PASSWORD_2,
-            User.Role.USER
+            TEST_PASSWORD_2
         );
 
         // Create first user
@@ -208,8 +201,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_EMAIL_TEXT,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_INVALID,
-            TEST_PASSWORD_GENERIC,
-            User.Role.USER
+            TEST_PASSWORD_GENERIC
         );
 
         // When & Then
@@ -234,8 +226,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_TEST,
-            TEST_PASSWORD_GENERIC,
-            User.Role.USER
+            TEST_PASSWORD_GENERIC
         );
 
         // When & Then
@@ -249,32 +240,6 @@ class UserResourceE2eTest implements TestPropertyProvider {
     }
 
     @Test
-    void testCreateUserWithAdminRole() {
-        // Given
-        CreateUserDTO createUserDTO = new CreateUserDTO(
-            TEST_ADMIN,
-            TEST_USER,
-            LocalDate.of(BIRTH_YEAR_1980, 1, 1),
-            TEST_EMAIL_ADMIN,
-            TEST_ADMIN_PASSWORD,
-            User.Role.ADMIN
-        );
-
-        // When
-        HttpRequest<CreateUserDTO> request = HttpRequest.POST(ENDPOINT_USER_CREATE, createUserDTO);
-        HttpResponse<UserDTO> response = client.toBlocking().exchange(request, UserDTO.class);
-
-        // Then
-        assertThat(response.status().getCode()).isEqualTo(HttpStatus.CREATED.getCode());
-        assertThat(response.body()).isNotNull();
-        assertThat(response.body().getRole()).isEqualTo(User.Role.ADMIN);
-
-        // Verify role in database
-        User savedUser = userRepository.findByEmail(TEST_EMAIL_ADMIN).orElseThrow();
-        assertThat(savedUser.getRole()).isEqualTo(User.Role.ADMIN);
-    }
-
-    @Test
     void testMultipleUsersCanBeCreated() {
         // Given
         CreateUserDTO user1 = new CreateUserDTO(
@@ -282,8 +247,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_ONE,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_USER1,
-            TEST_PASSWORD_1,
-            User.Role.USER
+            TEST_PASSWORD_1
         );
 
         CreateUserDTO user2 = new CreateUserDTO(
@@ -291,8 +255,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_TWO,
             LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
             TEST_EMAIL_USER2,
-            TEST_PASSWORD_2,
-            User.Role.USER
+            TEST_PASSWORD_2
         );
 
         CreateUserDTO user3 = new CreateUserDTO(
@@ -300,8 +263,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
             TEST_THREE,
             LocalDate.of(BIRTH_YEAR_1992, BIRTH_MONTH_3, BIRTH_MONTH_3),
             TEST_EMAIL_USER3,
-            TEST_PASSWORD_3,
-            User.Role.ADMIN
+            TEST_PASSWORD_3
         );
 
         // When
@@ -312,6 +274,11 @@ class UserResourceE2eTest implements TestPropertyProvider {
         // Then
         long userCount = userRepository.count();
         assertThat(userCount).isEqualTo(EXPECTED_USER_COUNT_THREE);
+
+        // All users created via this endpoint must have USER role
+        assertThat(userRepository.findByEmail(TEST_EMAIL_USER1).orElseThrow().getRole()).isEqualTo(User.Role.USER);
+        assertThat(userRepository.findByEmail(TEST_EMAIL_USER2).orElseThrow().getRole()).isEqualTo(User.Role.USER);
+        assertThat(userRepository.findByEmail(TEST_EMAIL_USER3).orElseThrow().getRole()).isEqualTo(User.Role.USER);
     }
 }
 

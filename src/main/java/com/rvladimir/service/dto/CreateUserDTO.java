@@ -1,7 +1,5 @@
 package com.rvladimir.service.dto;
 
-import com.rvladimir.domain.User;
-
 import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -33,7 +31,7 @@ public class CreateUserDTO {
     private String lastname;
 
     @NotNull
-    @Schema(description = "The user's date of birth", example = "1991-01-029")
+    @Schema(description = "The user's date of birth", example = "1991-01-01")
     private LocalDate dateBirth;
 
     @NotNull
@@ -47,8 +45,4 @@ public class CreateUserDTO {
     @NotBlank
     @Schema(description = "The user's password", example = "12345")
     private String password;
-
-    @NotNull
-    @Schema(description = "The user's password", example = "ADMIN")
-    private User.Role role;
 }

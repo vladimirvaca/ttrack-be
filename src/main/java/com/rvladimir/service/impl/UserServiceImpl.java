@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = userMapper.toEntity(createUserDTO);
+        user.setRole(User.Role.USER);
         // Hash the user's password before persisting (BCrypt with a cost factor)
         String hashedPassword = BCrypt.hashpw(createUserDTO.getPassword(), BCrypt.gensalt(BCRYPT_COST));
         user.setPassword(hashedPassword);

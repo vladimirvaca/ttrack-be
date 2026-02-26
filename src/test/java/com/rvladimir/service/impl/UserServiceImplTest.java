@@ -35,17 +35,11 @@ class UserServiceImplTest {
     private static final String TEST_EMAIL = "john.doe@example.com";
     private static final String TEST_PLAIN_PASSWORD = "plainPassword";
     private static final String TEST_HASHED_PASSWORD = "hashedPassword";
-    private static final String TEST_ADMIN = "Admin";
-    private static final String TEST_USER = "User";
-    private static final String TEST_ADMIN_EMAIL = "admin@example.com";
-    private static final String TEST_ADMIN_PASSWORD = "adminPassword";
     private static final String DUPLICATE_EMAIL_MESSAGE = "Duplicate value for email";
     private static final int BIRTH_YEAR = 1990;
     private static final int BIRTH_MONTH = 5;
     private static final int BIRTH_DAY = 15;
-    private static final int BIRTH_YEAR_1985 = 1985;
     private static final long USER_ID_1 = 1L;
-    private static final long USER_ID_2 = 2L;
 
     @Mock
     private UserRepository userRepository;
@@ -67,8 +61,7 @@ class UserServiceImplTest {
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
-            TEST_PLAIN_PASSWORD,
-            User.Role.USER
+            TEST_PLAIN_PASSWORD
         );
 
         user = new User(
@@ -78,7 +71,7 @@ class UserServiceImplTest {
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
             TEST_PLAIN_PASSWORD,
-            User.Role.USER
+            null
         );
 
         userDTO = new UserDTO(
@@ -116,11 +109,39 @@ class UserServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo(TEST_NAME);
         assertThat(result.getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(result.getRole()).isEqualTo(User.Role.USER);
 
         verify(userRepository).existsByEmail(TEST_EMAIL);
         verify(userMapper).toEntity(createUserDTO);
         verify(userRepository).save(any(User.class));
         verify(userMapper).toDto(savedUser);
+    }
+
+    @Test
+    void testCreateAlwaysAssignsUserRole() {
+        // Given
+        when(userRepository.existsByEmail(createUserDTO.getEmail())).thenReturn(false);
+        when(userMapper.toEntity(createUserDTO)).thenReturn(user);
+
+        User savedUser = new User(
+            USER_ID_1,
+            TEST_NAME,
+            TEST_LASTNAME,
+            LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
+            TEST_EMAIL,
+            TEST_HASHED_PASSWORD,
+            User.Role.USER
+        );
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userMapper.toDto(savedUser)).thenReturn(userDTO);
+
+        // When
+        userService.create(createUserDTO);
+
+        // Then - role must always be USER regardless of anything else
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getRole()).isEqualTo(User.Role.USER);
     }
 
     @Test
@@ -164,59 +185,5 @@ class UserServiceImplTest {
             .hasMessageContaining(DUPLICATE_EMAIL_MESSAGE);
 
         verify(userRepository).existsByEmail(TEST_EMAIL);
-    }
-
-    @Test
-    void testCreateWithDifferentRole() {
-        // Given
-        CreateUserDTO adminUserDTO = new CreateUserDTO(
-            TEST_ADMIN,
-            TEST_USER,
-            LocalDate.of(BIRTH_YEAR_1985, 1, 1),
-            TEST_ADMIN_EMAIL,
-            TEST_ADMIN_PASSWORD,
-            User.Role.ADMIN
-        );
-
-        User adminUser = new User(
-            null,
-            TEST_ADMIN,
-            TEST_USER,
-            LocalDate.of(BIRTH_YEAR_1985, 1, 1),
-            TEST_ADMIN_EMAIL,
-            TEST_ADMIN_PASSWORD,
-            User.Role.ADMIN
-        );
-
-        User savedAdminUser = new User(
-            USER_ID_2,
-            TEST_ADMIN,
-            TEST_USER,
-            LocalDate.of(BIRTH_YEAR_1985, 1, 1),
-            TEST_ADMIN_EMAIL,
-            TEST_HASHED_PASSWORD,
-            User.Role.ADMIN
-        );
-
-        UserDTO adminUserDTOResult = new UserDTO(
-            USER_ID_2,
-            TEST_ADMIN,
-            TEST_USER,
-            LocalDate.of(BIRTH_YEAR_1985, 1, 1),
-            TEST_ADMIN_EMAIL,
-            User.Role.ADMIN
-        );
-
-        when(userRepository.existsByEmail(adminUserDTO.getEmail())).thenReturn(false);
-        when(userMapper.toEntity(adminUserDTO)).thenReturn(adminUser);
-        when(userRepository.save(any(User.class))).thenReturn(savedAdminUser);
-        when(userMapper.toDto(savedAdminUser)).thenReturn(adminUserDTOResult);
-
-        // When
-        UserDTO result = userService.create(adminUserDTO);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getRole()).isEqualTo(User.Role.ADMIN);
     }
 }

@@ -63,8 +63,7 @@ class UserMapperTest {
             TEST_LASTNAME_DOE,
             LocalDate.of(BIRTH_YEAR_1990, BIRTH_MONTH_5, BIRTH_DAY_15),
             TEST_EMAIL_JOHN,
-            TEST_PASSWORD,
-            User.Role.USER
+            TEST_PASSWORD
         );
 
         // When
@@ -78,7 +77,8 @@ class UserMapperTest {
         assertThat(user.getDateBirth()).isEqualTo(LocalDate.of(BIRTH_YEAR_1990, BIRTH_MONTH_5, BIRTH_DAY_15));
         assertThat(user.getEmail()).isEqualTo(TEST_EMAIL_JOHN);
         assertThat(user.getPassword()).isEqualTo(TEST_PASSWORD);
-        assertThat(user.getRole()).isEqualTo(User.Role.USER);
+        // role is not mapped from CreateUserDTO; the service layer sets it to USER
+        assertThat(user.getRole()).isNull();
     }
 
     @Test

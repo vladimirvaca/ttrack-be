@@ -69,8 +69,7 @@ class UserResourceTest {
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
-            TEST_PASSWORD,
-            User.Role.USER
+            TEST_PASSWORD
         );
 
         UserDTO userDTO = new UserDTO(
@@ -93,6 +92,7 @@ class UserResourceTest {
         assertThat(response.body()).isNotNull();
         assertThat(response.body().getName()).isEqualTo(TEST_NAME);
         assertThat(response.body().getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(response.body().getRole()).isEqualTo(User.Role.USER);
 
         verify(userService).create(any(CreateUserDTO.class));
     }
@@ -105,8 +105,7 @@ class UserResourceTest {
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
-            TEST_PASSWORD,
-            User.Role.USER
+            TEST_PASSWORD
         );
 
         // When & Then
@@ -127,8 +126,7 @@ class UserResourceTest {
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL_INVALID,
-            TEST_PASSWORD,
-            User.Role.USER
+            TEST_PASSWORD
         );
 
         // When & Then
@@ -149,8 +147,7 @@ class UserResourceTest {
             TEST_LASTNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL_EXISTING,
-            TEST_PASSWORD,
-            User.Role.USER
+            TEST_PASSWORD
         );
 
         when(userService.create(any(CreateUserDTO.class)))
