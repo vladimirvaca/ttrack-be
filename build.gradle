@@ -173,6 +173,82 @@ tasks.named("dockerfileNative") {
     jdkVersion = "21"
 }
 
+/**
+ * Bumps the application version.
+ *
+ * By default, the patch segment is incremented.
+ * Pass -Pcomponent=minor or -Pcomponent=major to bump those segments instead.
+ * Pass -PnewVersion=x.y.z to set an explicit version.
+ *
+ * Usage:
+ *   ./gradlew bumpVersion                        # 0.3.1 -> 0.3.2
+ *   ./gradlew bumpVersion -Pcomponent=minor      # 0.3.1 -> 0.4.0
+ *   ./gradlew bumpVersion -Pcomponent=major      # 0.3.1 -> 1.0.0
+ *   ./gradlew bumpVersion -PnewVersion=1.2.3     # 0.3.1 -> 1.2.3
+ */
+tasks.register("bumpVersion") {
+    description = "Bumps the application version in version.properties and Application.java"
+    group = "versioning"
+
+    doLast {
+        def propsFile = file("version.properties")
+        def props = new Properties()
+        propsFile.withInputStream { props.load(it) }
+
+        def currentVersion = props.getProperty("version")
+        def nextVersion
+
+        if (project.hasProperty("newVersion")) {
+            nextVersion = project.property("newVersion").toString().trim()
+        } else {
+            def component = project.hasProperty("component") ? project.property("component").toString().trim() : "patch"
+            def parts = currentVersion.tokenize(".")
+            if (parts.size() != 3) {
+                throw new GradleException("Version '${currentVersion}' in version.properties does not follow MAJOR.MINOR.PATCH format.")
+            }
+            def major = parts[0].toInteger()
+            def minor = parts[1].toInteger()
+            def patch = parts[2].toInteger()
+
+            switch (component) {
+                case "major":
+                    major += 1
+                    minor = 0
+                    patch = 0
+                    break
+                case "minor":
+                    minor += 1
+                    patch = 0
+                    break
+                case "patch":
+                    patch += 1
+                    break
+                default:
+                    throw new GradleException("Unknown component '${component}'. Use major, minor, or patch.")
+            }
+            nextVersion = "${major}.${minor}.${patch}"
+        }
+
+        // Update version.properties
+        propsFile.text = "version=${nextVersion}\n"
+        logger.lifecycle("Version bumped: ${currentVersion} -> ${nextVersion}")
+
+        // Update Application.java OpenAPI version annotation
+        def appFile = file("src/main/java/com/rvladimir/Application.java")
+        def appContent = appFile.text
+        def updatedContent = appContent.replaceAll(
+            /version\s*=\s*"[^"]+"/,
+            "version = \"${nextVersion}\""
+        )
+        if (appContent == updatedContent) {
+            logger.warn("No version string was updated in Application.java — pattern not found.")
+        } else {
+            appFile.text = updatedContent
+            logger.lifecycle("Updated OpenAPI version in Application.java to ${nextVersion}")
+        }
+    }
+}
+
 tasks.register("installPreCommitGitHook") {
     description = "Installs the pre-commit git hook"
     group = "build setup"

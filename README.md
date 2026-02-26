@@ -314,6 +314,20 @@ git commit --no-verify -m "commit message"
 ./gradlew dockerfileNative    # Generate native Docker image
 ```
 
+### Versioning
+
+The `bumpVersion` task updates the version in both `version.properties` and the OpenAPI `@OpenAPIDefinition` annotation in `Application.java`.
+
+```bash
+./gradlew bumpVersion                       # Patch bump: 0.3.1 -> 0.3.2
+./gradlew bumpVersion -Pcomponent=minor     # Minor bump: 0.3.1 -> 0.4.0
+./gradlew bumpVersion -Pcomponent=major     # Major bump: 0.3.1 -> 1.0.0
+./gradlew bumpVersion -PnewVersion=1.2.3   # Set an explicit version
+```
+
+> **Note (PowerShell):** When passing `-PnewVersion=x.y.z`, wrap the argument in single quotes to avoid
+> PowerShell splitting on the dots: `./gradlew bumpVersion '-PnewVersion=1.2.3'`
+
 ### Database
 Flyway migrations run automatically on application startup. Migration scripts are located in:
 ```
