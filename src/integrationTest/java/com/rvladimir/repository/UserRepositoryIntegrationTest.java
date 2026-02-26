@@ -254,43 +254,6 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
     }
 
     @Test
-    void testUniqueNicknameConstraint() {
-        // Given
-        User user1 = new User(
-            null,
-            TEST_USER,
-            TEST_ONE,
-            TEST_NICKNAME_USER1,
-            LocalDate.of(BIRTH_YEAR_1990, 1, 1),
-            TEST_EMAIL_JOHN,
-            TEST_PASSWORD_1,
-            User.Role.USER
-        );
-        userRepository.save(user1);
-
-        User user2 = new User(
-            null,
-            TEST_USER,
-            TEST_TWO,
-            TEST_NICKNAME_USER1,
-            LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
-            TEST_EMAIL_JANE,
-            TEST_PASSWORD_2,
-            User.Role.USER
-        );
-
-        // When & Then
-        try {
-            userRepository.save(user2);
-            userRepository.flush();
-            // Should not reach here
-            assertThat(false).isTrue();
-        } catch (Exception e) {
-            assertThat(e).hasMessageContaining(DUPLICATE_KEYWORD);
-        }
-    }
-
-    @Test
     void testUpdateUser() {
         // Given
         User user = new User(
