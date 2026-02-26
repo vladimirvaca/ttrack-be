@@ -40,6 +40,7 @@ class SessionExerciseMapperTest {
     private static final String EXERCISE_IMAGE = "img.png";
     private static final String USER_FIRSTNAME = "John";
     private static final String USER_LASTNAME = "Doe";
+    private static final String USER_NICKNAME = "johnd";
     private static final LocalDate USER_BIRTH = LocalDate.of(1990, 1, 1);
     private static final String USER_EMAIL = "john@example.com";
     private static final String USER_PASSWORD = "pass";
@@ -58,7 +59,8 @@ class SessionExerciseMapperTest {
             REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS
         );
         Exercise exercise = new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
-        User user = new User(USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
+        User user = new User(
+            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
         TrainingSession trainingSession = new TrainingSession(
             TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW
         );
@@ -89,7 +91,8 @@ class SessionExerciseMapperTest {
     void toDtoShouldMapEntityToDto() {
         // Given
         Exercise exercise = new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
-        User user = new User(USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
+        User user = new User(
+            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
         TrainingSession trainingSession = new TrainingSession(
             TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW
         );
@@ -130,7 +133,8 @@ class SessionExerciseMapperTest {
             REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, null
         );
         Exercise exercise = new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
-        User user = new User(USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
+        User user = new User(
+            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
         TrainingSession trainingSession = new TrainingSession(
             TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW
         );

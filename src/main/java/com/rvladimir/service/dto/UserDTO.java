@@ -31,6 +31,10 @@ public class UserDTO {
     private String lastname;
 
     @NotNull
+    @Schema(description = "The user nickname", example = "JohnD")
+    private String nickname;
+
+    @NotNull
     @Schema(description = "The user date of birth", example = "1990-01-01")
     private LocalDate dateBirth;
 

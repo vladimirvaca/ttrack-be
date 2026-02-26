@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 public class CreateUserDTO {
     @NotNull
     @NotEmpty
+    @NotBlank
     @Schema(description = "The user's name", example = "Tony")
     private String name;
 
@@ -29,6 +30,12 @@ public class CreateUserDTO {
     @NotBlank
     @Schema(description = "The user's lastname", example = "Stark")
     private String lastname;
+
+    @NotNull
+    @NotEmpty
+    @NotBlank
+    @Schema(description = "The user's nickname", example = "IronMan")
+    private String nickname;
 
     @NotNull
     @Schema(description = "The user's date of birth", example = "1991-01-01")

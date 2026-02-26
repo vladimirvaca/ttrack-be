@@ -41,6 +41,7 @@ class AuthServiceImplTest {
     private static final String TEST_PASSWORD = "password123";
     private static final String TEST_WRONG_PASSWORD = "wrongPassword";
     private static final String TOKEN_VALUE = "jwt-token";
+    private static final String TEST_NICKNAME = "johnd";
     private static final long USER_ID = 42L;
     private static final int TEST_BIRTH_YEAR = 1990;
 
@@ -67,6 +68,7 @@ class AuthServiceImplTest {
             USER_ID,
             "John",
             "Doe",
+            TEST_NICKNAME,
             java.time.LocalDate.of(TEST_BIRTH_YEAR, 1, 1),
             TEST_EMAIL,
             BCrypt.hashpw(TEST_PASSWORD, BCrypt.gensalt()),

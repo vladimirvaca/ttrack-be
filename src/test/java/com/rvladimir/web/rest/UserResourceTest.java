@@ -36,6 +36,7 @@ class UserResourceTest {
 
     private static final String TEST_NAME = "John";
     private static final String TEST_LASTNAME = "Doe";
+    private static final String TEST_NICKNAME = "johnd";
     private static final String TEST_EMAIL = "john.doe@example.com";
     private static final String TEST_EMAIL_INVALID = "invalid-email";
     private static final String TEST_EMAIL_EXISTING = "existing@example.com";
@@ -67,6 +68,7 @@ class UserResourceTest {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             TEST_NAME,
             TEST_LASTNAME,
+            TEST_NICKNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
             TEST_PASSWORD
@@ -76,6 +78,7 @@ class UserResourceTest {
             USER_ID_1,
             TEST_NAME,
             TEST_LASTNAME,
+            TEST_NICKNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
             User.Role.USER
@@ -91,6 +94,7 @@ class UserResourceTest {
         assertThat(response.status().getCode()).isEqualTo(HttpStatus.CREATED.getCode());
         assertThat(response.body()).isNotNull();
         assertThat(response.body().getName()).isEqualTo(TEST_NAME);
+        assertThat(response.body().getNickname()).isEqualTo(TEST_NICKNAME);
         assertThat(response.body().getEmail()).isEqualTo(TEST_EMAIL);
         assertThat(response.body().getRole()).isEqualTo(User.Role.USER);
 
@@ -103,6 +107,7 @@ class UserResourceTest {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             "",
             TEST_LASTNAME,
+            TEST_NICKNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL,
             TEST_PASSWORD
@@ -124,6 +129,7 @@ class UserResourceTest {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             TEST_NAME,
             TEST_LASTNAME,
+            TEST_NICKNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL_INVALID,
             TEST_PASSWORD
@@ -145,6 +151,7 @@ class UserResourceTest {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             TEST_NAME,
             TEST_LASTNAME,
+            TEST_NICKNAME,
             LocalDate.of(BIRTH_YEAR, BIRTH_MONTH, BIRTH_DAY),
             TEST_EMAIL_EXISTING,
             TEST_PASSWORD

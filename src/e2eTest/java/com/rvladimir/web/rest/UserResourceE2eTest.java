@@ -51,6 +51,13 @@ class UserResourceE2eTest implements TestPropertyProvider {
     private static final String TEST_TWO = "Two";
     private static final String TEST_THREE = "Three";
     private static final String TEST_LASTNAME = "Lastname";
+    private static final String TEST_NICKNAME_JOHN = "johnd";
+    private static final String TEST_NICKNAME_JANE = "janes";
+    private static final String TEST_NICKNAME_FIRST = "firstnick";
+    private static final String TEST_NICKNAME_INVALID = "invalidnick";
+    private static final String TEST_NICKNAME_USER1 = "user1nick";
+    private static final String TEST_NICKNAME_USER2 = "user2nick";
+    private static final String TEST_NICKNAME_USER3 = "user3nick";
     private static final String TEST_EMAIL_JOHN = "john.doe@example.com";
     private static final String TEST_EMAIL_JANE = "jane.smith@example.com";
     private static final String TEST_EMAIL_DUPLICATE = "duplicate@example.com";
@@ -79,6 +86,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
     private static final int BIRTH_DAY_20 = 20;
     private static final long EXPECTED_USER_COUNT_ONE = 1L;
     private static final long EXPECTED_USER_COUNT_THREE = 3L;
+    private static final String TEST_BLANK = "   ";
 
     @Container
     static PostgreSQLContainer<?> postgres = PostgresTestContainer.getInstance();
@@ -111,6 +119,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             TEST_JOHN,
             TEST_DOE,
+            TEST_NICKNAME_JOHN,
             LocalDate.of(BIRTH_YEAR_1990, BIRTH_MONTH_5, BIRTH_DAY_15),
             TEST_EMAIL_JOHN,
             TEST_PASSWORD
@@ -125,6 +134,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         assertThat(response.body()).isNotNull();
         assertThat(response.body().getName()).isEqualTo(TEST_JOHN);
         assertThat(response.body().getLastname()).isEqualTo(TEST_DOE);
+        assertThat(response.body().getNickname()).isEqualTo(TEST_NICKNAME_JOHN);
         assertThat(response.body().getEmail()).isEqualTo(TEST_EMAIL_JOHN);
         // role is always USER when created via this endpoint
         assertThat(response.body().getRole()).isEqualTo(User.Role.USER);
@@ -132,6 +142,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         // Verify user was actually saved to database with USER role
         User savedUser = userRepository.findByEmail(TEST_EMAIL_JOHN).orElseThrow();
         assertThat(savedUser.getRole()).isEqualTo(User.Role.USER);
+        assertThat(savedUser.getNickname()).isEqualTo(TEST_NICKNAME_JOHN);
     }
 
     @Test
@@ -140,6 +151,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             TEST_JANE,
             TEST_SMITH,
+            TEST_NICKNAME_JANE,
             LocalDate.of(BIRTH_YEAR_1985, BIRTH_MONTH_10, BIRTH_DAY_20),
             TEST_EMAIL_JANE,
             TEST_PLAIN_PASSWORD
@@ -162,6 +174,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO firstUser = new CreateUserDTO(
             TEST_FIRST,
             TEST_USER,
+            TEST_NICKNAME_FIRST,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_DUPLICATE,
             TEST_PASSWORD_1
@@ -170,6 +183,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO secondUser = new CreateUserDTO(
             TEST_SECOND,
             TEST_USER,
+            TEST_NICKNAME_FIRST,
             LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
             TEST_EMAIL_DUPLICATE,
             TEST_PASSWORD_2
@@ -199,6 +213,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO createUserDTO = new CreateUserDTO(
             TEST_INVALID,
             TEST_EMAIL_TEXT,
+            TEST_NICKNAME_INVALID,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_INVALID,
             TEST_PASSWORD_GENERIC
@@ -219,11 +234,56 @@ class UserResourceE2eTest implements TestPropertyProvider {
     }
 
     @Test
-    void testCreateUserMissingRequiredFieldsReturns400() {
+    void testCreateUserNullNameReturns400() {
         // Given - null name
         CreateUserDTO createUserDTO = new CreateUserDTO(
             null,
             TEST_LASTNAME,
+            TEST_NICKNAME_INVALID,
+            LocalDate.of(BIRTH_YEAR_1990, 1, 1),
+            TEST_EMAIL_TEST,
+            TEST_PASSWORD_GENERIC
+        );
+
+        // When & Then
+        HttpRequest<CreateUserDTO> request = HttpRequest.POST(ENDPOINT_USER_CREATE, createUserDTO);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, UserDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
+
+    @Test
+    void testCreateUserBlankNameReturns400() {
+        // Given - blank name (only whitespace) — rejected by @NotBlank
+        CreateUserDTO createUserDTO = new CreateUserDTO(
+            TEST_BLANK,
+            TEST_LASTNAME,
+            TEST_NICKNAME_INVALID,
+            LocalDate.of(BIRTH_YEAR_1990, 1, 1),
+            TEST_EMAIL_TEST,
+            TEST_PASSWORD_GENERIC
+        );
+
+        // When & Then
+        HttpRequest<CreateUserDTO> request = HttpRequest.POST(ENDPOINT_USER_CREATE, createUserDTO);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, UserDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
+
+    @Test
+    void testCreateUserNullNicknameReturns400() {
+        // Given - null nickname
+        CreateUserDTO createUserDTO = new CreateUserDTO(
+            TEST_USER,
+            TEST_LASTNAME,
+            null,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_TEST,
             TEST_PASSWORD_GENERIC
@@ -245,6 +305,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO user1 = new CreateUserDTO(
             TEST_USER,
             TEST_ONE,
+            TEST_NICKNAME_USER1,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_USER1,
             TEST_PASSWORD_1
@@ -253,6 +314,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO user2 = new CreateUserDTO(
             TEST_USER,
             TEST_TWO,
+            TEST_NICKNAME_USER2,
             LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
             TEST_EMAIL_USER2,
             TEST_PASSWORD_2
@@ -261,6 +323,7 @@ class UserResourceE2eTest implements TestPropertyProvider {
         CreateUserDTO user3 = new CreateUserDTO(
             TEST_USER,
             TEST_THREE,
+            TEST_NICKNAME_USER3,
             LocalDate.of(BIRTH_YEAR_1992, BIRTH_MONTH_3, BIRTH_MONTH_3),
             TEST_EMAIL_USER3,
             TEST_PASSWORD_3
@@ -275,10 +338,18 @@ class UserResourceE2eTest implements TestPropertyProvider {
         long userCount = userRepository.count();
         assertThat(userCount).isEqualTo(EXPECTED_USER_COUNT_THREE);
 
-        // All users created via this endpoint must have USER role
-        assertThat(userRepository.findByEmail(TEST_EMAIL_USER1).orElseThrow().getRole()).isEqualTo(User.Role.USER);
-        assertThat(userRepository.findByEmail(TEST_EMAIL_USER2).orElseThrow().getRole()).isEqualTo(User.Role.USER);
-        assertThat(userRepository.findByEmail(TEST_EMAIL_USER3).orElseThrow().getRole()).isEqualTo(User.Role.USER);
+        // All users created via this endpoint must have USER role and correct nicknames
+        User savedUser1 = userRepository.findByEmail(TEST_EMAIL_USER1).orElseThrow();
+        assertThat(savedUser1.getRole()).isEqualTo(User.Role.USER);
+        assertThat(savedUser1.getNickname()).isEqualTo(TEST_NICKNAME_USER1);
+
+        User savedUser2 = userRepository.findByEmail(TEST_EMAIL_USER2).orElseThrow();
+        assertThat(savedUser2.getRole()).isEqualTo(User.Role.USER);
+        assertThat(savedUser2.getNickname()).isEqualTo(TEST_NICKNAME_USER2);
+
+        User savedUser3 = userRepository.findByEmail(TEST_EMAIL_USER3).orElseThrow();
+        assertThat(savedUser3.getRole()).isEqualTo(User.Role.USER);
+        assertThat(savedUser3.getNickname()).isEqualTo(TEST_NICKNAME_USER3);
     }
 }
 

@@ -12,6 +12,7 @@ public final class TestDataFactory {
 
     private static final String DEFAULT_USER_NAME = "John";
     private static final String DEFAULT_USER_LASTNAME = "Doe";
+    private static final String DEFAULT_USER_NICKNAME = "johnd";
     private static final String DEFAULT_USER_PASSWORD = "hashedPassword";
     private static final int DEFAULT_BIRTH_YEAR = 1990;
     private static final int DEFAULT_BIRTH_MONTH = 5;
@@ -41,6 +42,7 @@ public final class TestDataFactory {
             null,
             DEFAULT_USER_NAME,
             DEFAULT_USER_LASTNAME,
+            DEFAULT_USER_NICKNAME,
             LocalDate.of(DEFAULT_BIRTH_YEAR, DEFAULT_BIRTH_MONTH, DEFAULT_BIRTH_DAY),
             email,
             DEFAULT_USER_PASSWORD,

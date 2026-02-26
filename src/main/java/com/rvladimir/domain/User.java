@@ -41,6 +41,10 @@ public class User {
     private String lastname;
 
     @NotNull
+    @Column(nullable = false, unique = true)
+    private String nickname;
+
+    @NotNull
     @Column(name = "date_birth", nullable = false)
     private LocalDate dateBirth;
 

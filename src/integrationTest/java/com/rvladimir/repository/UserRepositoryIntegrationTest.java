@@ -43,6 +43,15 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
     private static final String TEST_NAME_CHANGED = "NameChanged";
     private static final String TEST_DELETE = "Delete";
     private static final String TEST_ME = "Me";
+    private static final String TEST_NICKNAME_JOHN = "johnd";
+    private static final String TEST_NICKNAME_JANE = "janes";
+    private static final String TEST_NICKNAME_ALICE = "alicej";
+    private static final String TEST_NICKNAME_BOB = "bobw";
+    private static final String TEST_NICKNAME_USER1 = "user1";
+    private static final String TEST_NICKNAME_USER2 = "user2";
+    private static final String TEST_NICKNAME_ORIGINAL = "origuser";
+    private static final String TEST_NICKNAME_UPDATED = "upduser";
+    private static final String TEST_NICKNAME_DELETE = "deluser";
     private static final String TEST_EMAIL_JOHN = "john.doe@example.com";
     private static final String TEST_EMAIL_JANE = "jane.smith@example.com";
     private static final String TEST_EMAIL_ALICE = "alice.johnson@example.com";
@@ -99,6 +108,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_JOHN,
             TEST_DOE,
+            TEST_NICKNAME_JOHN,
             LocalDate.of(BIRTH_YEAR_1990, BIRTH_MONTH_5, BIRTH_DAY_15),
             TEST_EMAIL_JOHN,
             TEST_PASSWORD,
@@ -112,6 +122,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
         assertThat(savedUser.getId()).isNotNull();
         assertThat(savedUser.getName()).isEqualTo(TEST_JOHN);
         assertThat(savedUser.getLastname()).isEqualTo(TEST_DOE);
+        assertThat(savedUser.getNickname()).isEqualTo(TEST_NICKNAME_JOHN);
         assertThat(savedUser.getEmail()).isEqualTo(TEST_EMAIL_JOHN);
     }
 
@@ -122,6 +133,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_JANE,
             TEST_SMITH,
+            TEST_NICKNAME_JANE,
             LocalDate.of(BIRTH_YEAR_1985, BIRTH_MONTH_10, BIRTH_DAY_20),
             TEST_EMAIL_JANE,
             TEST_PASSWORD,
@@ -135,6 +147,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
         // Then
         assertThat(foundUser).isPresent();
         assertThat(foundUser.get().getName()).isEqualTo(TEST_JANE);
+        assertThat(foundUser.get().getNickname()).isEqualTo(TEST_NICKNAME_JANE);
         assertThat(foundUser.get().getEmail()).isEqualTo(TEST_EMAIL_JANE);
     }
 
@@ -145,6 +158,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_ALICE,
             TEST_JOHNSON,
+            TEST_NICKNAME_ALICE,
             LocalDate.of(BIRTH_YEAR_1992, BIRTH_MONTH_3, BIRTH_DAY_12),
             TEST_EMAIL_ALICE,
             TEST_PASSWORD,
@@ -159,6 +173,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
         assertThat(foundUser).isPresent();
         assertThat(foundUser.get().getName()).isEqualTo(TEST_ALICE);
         assertThat(foundUser.get().getLastname()).isEqualTo(TEST_JOHNSON);
+        assertThat(foundUser.get().getNickname()).isEqualTo(TEST_NICKNAME_ALICE);
     }
 
     @Test
@@ -177,6 +192,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_BOB,
             TEST_WILLIAMS,
+            TEST_NICKNAME_BOB,
             LocalDate.of(BIRTH_YEAR_1988, BIRTH_MONTH_7, BIRTH_DAY_25),
             TEST_EMAIL_BOB,
             TEST_PASSWORD,
@@ -207,6 +223,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_USER,
             TEST_ONE,
+            TEST_NICKNAME_USER1,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_DUPLICATE,
             TEST_PASSWORD_1,
@@ -218,8 +235,46 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_USER,
             TEST_TWO,
+            TEST_NICKNAME_USER2,
             LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
             TEST_EMAIL_DUPLICATE,
+            TEST_PASSWORD_2,
+            User.Role.USER
+        );
+
+        // When & Then
+        try {
+            userRepository.save(user2);
+            userRepository.flush();
+            // Should not reach here
+            assertThat(false).isTrue();
+        } catch (Exception e) {
+            assertThat(e).hasMessageContaining(DUPLICATE_KEYWORD);
+        }
+    }
+
+    @Test
+    void testUniqueNicknameConstraint() {
+        // Given
+        User user1 = new User(
+            null,
+            TEST_USER,
+            TEST_ONE,
+            TEST_NICKNAME_USER1,
+            LocalDate.of(BIRTH_YEAR_1990, 1, 1),
+            TEST_EMAIL_JOHN,
+            TEST_PASSWORD_1,
+            User.Role.USER
+        );
+        userRepository.save(user1);
+
+        User user2 = new User(
+            null,
+            TEST_USER,
+            TEST_TWO,
+            TEST_NICKNAME_USER1,
+            LocalDate.of(BIRTH_YEAR_1991, BIRTH_MONTH_2, BIRTH_MONTH_2),
+            TEST_EMAIL_JANE,
             TEST_PASSWORD_2,
             User.Role.USER
         );
@@ -242,6 +297,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_ORIGINAL,
             TEST_NAME,
+            TEST_NICKNAME_ORIGINAL,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_ORIGINAL,
             TEST_PASSWORD_GENERIC,
@@ -252,15 +308,18 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
         // When
         savedUser.setName(TEST_UPDATED);
         savedUser.setLastname(TEST_NAME_CHANGED);
+        savedUser.setNickname(TEST_NICKNAME_UPDATED);
         User updatedUser = userRepository.update(savedUser);
 
         // Then
         assertThat(updatedUser.getName()).isEqualTo(TEST_UPDATED);
         assertThat(updatedUser.getLastname()).isEqualTo(TEST_NAME_CHANGED);
+        assertThat(updatedUser.getNickname()).isEqualTo(TEST_NICKNAME_UPDATED);
 
         Optional<User> retrievedUser = userRepository.findById(savedUser.getId());
         assertThat(retrievedUser).isPresent();
         assertThat(retrievedUser.get().getName()).isEqualTo(TEST_UPDATED);
+        assertThat(retrievedUser.get().getNickname()).isEqualTo(TEST_NICKNAME_UPDATED);
     }
 
     @Test
@@ -270,6 +329,7 @@ class UserRepositoryIntegrationTest implements TestPropertyProvider {
             null,
             TEST_DELETE,
             TEST_ME,
+            TEST_NICKNAME_DELETE,
             LocalDate.of(BIRTH_YEAR_1990, 1, 1),
             TEST_EMAIL_DELETE,
             TEST_PASSWORD_GENERIC,
