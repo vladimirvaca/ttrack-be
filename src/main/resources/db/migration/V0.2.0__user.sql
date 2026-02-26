@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS ttrack.user (
     date_birth DATE NOT NULL,
     email VARCHAR NOT NULL UNIQUE,
     password VARCHAR NOT NULL,
-    role VARCHAR NOT NULL
+    role VARCHAR NOT NULL,
+    nickname VARCHAR NOT NULL
 );

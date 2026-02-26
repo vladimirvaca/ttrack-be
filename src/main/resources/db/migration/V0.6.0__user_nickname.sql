@@ -1,3 +1,0 @@
-ALTER TABLE ttrack.user
-    ADD COLUMN nickname VARCHAR NOT NULL UNIQUE;
-
