@@ -2,8 +2,6 @@ package com.rvladimir.service.dto;
 
 import io.micronaut.serde.annotation.Serdeable;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -19,13 +17,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateSessionExerciseDTO {
-    @NotNull
+
     private Integer rounds;
 
-    @NotNull
     private Integer sets;
 
-    @NotNull
     private Integer repetitions;
 
     private Integer sprints;
@@ -36,26 +32,21 @@ public class CreateSessionExerciseDTO {
 
     private Double distance;
 
-    @NotNull
     private LocalDateTime startTime;
 
-    @NotNull
     private LocalDateTime endTime;
 
-    @NotNull
     private Integer restTime;
 
-    @NotNull
     private String status;
 
-    @NotNull
     private Integer exerciseOrder;
 
-    @NotNull
     private Long exerciseId;
 
-    @NotNull
     private LocalDateTime createdAt;
 
     private String unitOfMeasurement;
+
+    private String typeOfExercise;
 }

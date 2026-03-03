@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.rvladimir.domain.Exercise;
 import com.rvladimir.domain.SessionExercise;
 import com.rvladimir.domain.TrainingSession;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.domain.User;
 import com.rvladimir.test.PostgresTestContainer;
 import com.rvladimir.test.TestDataFactory;
@@ -47,6 +48,7 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
     private static final int TEST_ORDER = 1;
     private static final SessionExercise.Status TEST_STATUS = SessionExercise.Status.STARTED;
     private static final SessionExercise.UnitOfMeasurement TEST_UNIT = SessionExercise.UnitOfMeasurement.KILOMETERS;
+    private static final TypeOfExercise TEST_TYPE_OF_EXERCISE = TypeOfExercise.BOXING_BAG;
     private static final long NON_EXISTING_ID = 999L;
     private static final int TEST_PLUS_MINUTES = 30;
     private static final int TEST_UPDATED_ROUNDS = 10;
@@ -124,7 +126,8 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
             exercise,
             session,
             LocalDateTime.now(),
-            TEST_UNIT
+            TEST_UNIT,
+            TEST_TYPE_OF_EXERCISE
         );
     }
 
@@ -224,5 +227,53 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
 
         // Then
         assertThat(found).isEmpty();
+    }
+
+    @Test
+    void testSaveSessionExerciseWithTypeOfExercise() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+
+        // When
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // Then
+        assertThat(saved.getTypeOfExercise()).isEqualTo(TEST_TYPE_OF_EXERCISE);
+    }
+
+    @Test
+    void testSaveSessionExerciseWithNullTypeOfExercise() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+        sessionExercise.setTypeOfExercise(null);
+
+        // When
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // Then
+        assertThat(saved.getTypeOfExercise()).isNull();
+    }
+
+    @Test
+    void testUpdateTypeOfExercise() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // When
+        saved.setTypeOfExercise(TypeOfExercise.SHADOW_BOXING);
+        SessionExercise updated = sessionExerciseRepository.update(saved);
+
+        // Then
+        assertThat(updated.getTypeOfExercise()).isEqualTo(TypeOfExercise.SHADOW_BOXING);
     }
 }

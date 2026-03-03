@@ -34,4 +34,5 @@ public class SessionExerciseDTO {
     private Long trainingSessionId;
     private LocalDateTime createdAt;
     private String unitOfMeasurement;
+    private String typeOfExercise;
 }

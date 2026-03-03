@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -58,44 +57,40 @@ public class SessionExercise {
     @Column
     private Double distance;
 
-    @NotNull
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "start_time")
     private LocalDateTime startTime;
 
-    @NotNull
-    @Column(name = "end_time", nullable = false)
+    @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @NotNull
-    @Column(name = "rest_time", nullable = false)
+    @Column(name = "rest_time")
     private Integer restTime;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private Status status;
 
-    @NotNull
-    @Column(name = "exercise_order", nullable = false)
+    @Column(name = "exercise_order")
     private Integer exerciseOrder;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "exercise_id", nullable = false)
+    @JoinColumn(name = "exercise_id")
     private Exercise exercise;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "training_session_id", nullable = false)
+    @JoinColumn(name = "training_session_id")
     private TrainingSession trainingSession;
 
-    @NotNull
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "unit_of_measurement")
     @Enumerated(EnumType.STRING)
     private UnitOfMeasurement unitOfMeasurement;
+
+    @Column(name = "type_of_exercise")
+    @Enumerated(EnumType.STRING)
+    private TypeOfExercise typeOfExercise;
 
     /**
      * Unit of measurement for distance.

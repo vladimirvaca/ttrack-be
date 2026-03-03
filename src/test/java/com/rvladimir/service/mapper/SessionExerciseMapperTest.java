@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.rvladimir.domain.Exercise;
 import com.rvladimir.domain.SessionExercise;
 import com.rvladimir.domain.TrainingSession;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.domain.User;
 import com.rvladimir.service.dto.CreateSessionExerciseDTO;
 import com.rvladimir.service.dto.SessionExerciseDTO;
@@ -33,6 +34,7 @@ class SessionExerciseMapperTest {
     private static final long EXERCISE_ID = 10L;
     private static final long TRAINING_SESSION_ID = 20L;
     private static final String UNIT_KILOMETERS = "KILOMETERS";
+    private static final String TYPE_OF_EXERCISE = "BOXING_BAG";
     private static final LocalDateTime NOW = LocalDateTime.now();
     private static final long USER_ID = 100L;
     private static final String EXERCISE_NAME = "Bench Press";
@@ -51,19 +53,26 @@ class SessionExerciseMapperTest {
 
     private final SessionExerciseMapper mapper = new SessionExerciseMapper();
 
+    private Exercise buildExercise() {
+        return new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
+    }
+
+    private TrainingSession buildTrainingSession() {
+        User user = new User(
+            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
+        return new TrainingSession(
+            TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW);
+    }
+
     @Test
     void toEntityShouldMapDtoToEntity() {
         // Given
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS
+            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS, TYPE_OF_EXERCISE
         );
-        Exercise exercise = new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
-        User user = new User(
-            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
-        TrainingSession trainingSession = new TrainingSession(
-            TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW
-        );
+        Exercise exercise = buildExercise();
+        TrainingSession trainingSession = buildTrainingSession();
 
         // When
         SessionExercise entity = mapper.toEntity(dto, exercise, trainingSession);
@@ -85,21 +94,18 @@ class SessionExerciseMapperTest {
         assertThat(entity.getTrainingSession()).isEqualTo(trainingSession);
         assertThat(entity.getCreatedAt()).isEqualTo(NOW);
         assertThat(entity.getUnitOfMeasurement().name()).isEqualTo(UNIT_KILOMETERS);
+        assertThat(entity.getTypeOfExercise()).isEqualTo(TypeOfExercise.BOXING_BAG);
     }
 
     @Test
     void toDtoShouldMapEntityToDto() {
         // Given
-        Exercise exercise = new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
-        User user = new User(
-            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
-        TrainingSession trainingSession = new TrainingSession(
-            TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW
-        );
+        Exercise exercise = buildExercise();
+        TrainingSession trainingSession = buildTrainingSession();
         SessionExercise entity = new SessionExercise(
             1L, ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
             REST_TIME, SessionExercise.Status.valueOf(STATUS), EXERCISE_ORDER, exercise, trainingSession, NOW,
-            SessionExercise.UnitOfMeasurement.valueOf(UNIT_KILOMETERS)
+            SessionExercise.UnitOfMeasurement.valueOf(UNIT_KILOMETERS), TypeOfExercise.valueOf(TYPE_OF_EXERCISE)
         );
 
         // When
@@ -123,6 +129,7 @@ class SessionExerciseMapperTest {
         assertThat(dto.getTrainingSessionId()).isEqualTo(TRAINING_SESSION_ID);
         assertThat(dto.getCreatedAt()).isEqualTo(NOW);
         assertThat(dto.getUnitOfMeasurement()).isEqualTo(UNIT_KILOMETERS);
+        assertThat(dto.getTypeOfExercise()).isEqualTo(TYPE_OF_EXERCISE);
     }
 
     @Test
@@ -130,19 +137,87 @@ class SessionExerciseMapperTest {
         // Given
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, null
+            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, null, null
         );
-        Exercise exercise = new Exercise(EXERCISE_ID, EXERCISE_NAME, DESC, EXERCISE_TYPE, EXERCISE_IMAGE, NOW);
-        User user = new User(
-            USER_ID, USER_FIRSTNAME, USER_LASTNAME, USER_NICKNAME, USER_BIRTH, USER_EMAIL, USER_PASSWORD, USER_ROLE);
-        TrainingSession trainingSession = new TrainingSession(
-            TRAINING_SESSION_ID, TRAINING_SESSION_NAME, DESC, TRAINING_SESSION_STATUS, user, NOW
-        );
+        Exercise exercise = buildExercise();
+        TrainingSession trainingSession = buildTrainingSession();
 
         // When
         SessionExercise entity = mapper.toEntity(dto, exercise, trainingSession);
 
         // Then
         assertThat(entity.getUnitOfMeasurement()).isNull();
+        assertThat(entity.getTypeOfExercise()).isNull();
+    }
+
+    @Test
+    void toEntityShouldHandleNullStatus() {
+        // Given
+        CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
+            ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, null, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS, TYPE_OF_EXERCISE
+        );
+        Exercise exercise = buildExercise();
+        TrainingSession trainingSession = buildTrainingSession();
+
+        // When
+        SessionExercise entity = mapper.toEntity(dto, exercise, trainingSession);
+
+        // Then
+        assertThat(entity.getStatus()).isNull();
+    }
+
+    @Test
+    void toDtoShouldHandleNullStatusAndNullTypeOfExercise() {
+        // Given
+        Exercise exercise = buildExercise();
+        TrainingSession trainingSession = buildTrainingSession();
+        SessionExercise entity = new SessionExercise(
+            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, null, EXERCISE_ORDER, exercise, trainingSession, NOW, null, null
+        );
+
+        // When
+        SessionExerciseDTO dto = mapper.toDto(entity);
+
+        // Then
+        assertThat(dto.getStatus()).isNull();
+        assertThat(dto.getTypeOfExercise()).isNull();
+        assertThat(dto.getUnitOfMeasurement()).isNull();
+    }
+
+    @Test
+    void toDtoShouldHandleNullExerciseAndTrainingSession() {
+        // Given
+        SessionExercise entity = new SessionExercise(
+            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, SessionExercise.Status.STARTED, EXERCISE_ORDER, null, null, NOW, null, null
+        );
+
+        // When
+        SessionExerciseDTO dto = mapper.toDto(entity);
+
+        // Then
+        assertThat(dto.getExerciseId()).isNull();
+        assertThat(dto.getTrainingSessionId()).isNull();
+    }
+
+    @Test
+    void toEntityShouldMapAllTypeOfExerciseValues() {
+        for (TypeOfExercise type : TypeOfExercise.values()) {
+            // Given
+            CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
+                ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+                REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS, type.name()
+            );
+            Exercise exercise = buildExercise();
+            TrainingSession trainingSession = buildTrainingSession();
+
+            // When
+            SessionExercise entity = mapper.toEntity(dto, exercise, trainingSession);
+
+            // Then
+            assertThat(entity.getTypeOfExercise()).isEqualTo(type);
+        }
     }
 }

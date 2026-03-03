@@ -17,6 +17,8 @@ import com.rvladimir.service.dto.CreateSessionExerciseDTO;
 import com.rvladimir.service.dto.SessionExerciseDTO;
 import com.rvladimir.service.mapper.SessionExerciseMapper;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -87,13 +89,58 @@ class SessionExerciseServiceImplTest {
     }
 
     @Test
-    void testCreateSessionExerciseNotFound() {
+    void testCreateSessionExerciseExerciseNotFound() {
         // Given
         when(exerciseRepository.findById(SessionExerciseTestHelper.EXERCISE_ID)).thenReturn(Optional.empty());
         when(trainingSessionRepository.findById(SessionExerciseTestHelper.TRAINING_SESSION_ID))
             .thenReturn(Optional.of(trainingSession));
+
         // When & Then
         Assertions.assertThrows(IllegalArgumentException.class, () ->
             sessionExerciseService.createSessionExercise(SessionExerciseTestHelper.TRAINING_SESSION_ID, createDto));
+    }
+
+    @Test
+    void testCreateSessionExerciseTrainingSessionNotFound() {
+        // Given
+        when(exerciseRepository.findById(SessionExerciseTestHelper.EXERCISE_ID)).thenReturn(Optional.of(exercise));
+        when(trainingSessionRepository.findById(SessionExerciseTestHelper.TRAINING_SESSION_ID))
+            .thenReturn(Optional.empty());
+
+        // When & Then
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+            sessionExerciseService.createSessionExercise(SessionExerciseTestHelper.TRAINING_SESSION_ID, createDto));
+    }
+
+    @Test
+    void testGetSessionExercisesByTrainingSession() {
+        // Given
+        when(sessionExerciseRepository.findByTrainingSessionId(SessionExerciseTestHelper.TRAINING_SESSION_ID))
+            .thenReturn(Collections.singletonList(sessionExercise));
+        when(sessionExerciseMapper.toDto(sessionExercise)).thenReturn(sessionExerciseDTO);
+
+        // When
+        List<SessionExerciseDTO> result =
+            sessionExerciseService.getSessionExercisesByTrainingSession(SessionExerciseTestHelper.TRAINING_SESSION_ID);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst()).isEqualTo(sessionExerciseDTO);
+        verify(sessionExerciseRepository).findByTrainingSessionId(SessionExerciseTestHelper.TRAINING_SESSION_ID);
+    }
+
+    @Test
+    void testGetSessionExercisesByTrainingSessionEmpty() {
+        // Given
+        when(sessionExerciseRepository.findByTrainingSessionId(SessionExerciseTestHelper.TRAINING_SESSION_ID))
+            .thenReturn(Collections.emptyList());
+
+        // When
+        List<SessionExerciseDTO> result =
+            sessionExerciseService.getSessionExercisesByTrainingSession(SessionExerciseTestHelper.TRAINING_SESSION_ID);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(sessionExerciseRepository).findByTrainingSessionId(SessionExerciseTestHelper.TRAINING_SESSION_ID);
     }
 }
