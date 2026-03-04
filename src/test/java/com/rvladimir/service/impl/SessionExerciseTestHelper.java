@@ -31,6 +31,7 @@ public final class SessionExerciseTestHelper {
     public static final long SESSION_EXERCISE_ID = 1L;
     public static final String UNIT_KILOMETERS = "KILOMETERS";
     public static final String TYPE_OF_EXERCISE = "BOXING_BAG";
+    public static final String NOTES = "Test notes";
 
     /**
      * Creates a CreateSessionExerciseDTO with the provided parameters.
@@ -49,13 +50,13 @@ public final class SessionExerciseTestHelper {
         String status,
         int exerciseOrder,
         long exerciseId,
-        LocalDateTime createdAt,
         String unit,
-        String typeOfExercise
+        String typeOfExercise,
+        String notes
     ) {
         return new CreateSessionExerciseDTO(
             rounds, sets, repetitions, sprints, duration, weight, distance, startTime,
-            endTime, restTime, status, exerciseOrder, exerciseId, createdAt, unit, typeOfExercise);
+            endTime, restTime, status, exerciseOrder, exerciseId, unit, typeOfExercise, notes);
     }
 
     /**
@@ -65,7 +66,7 @@ public final class SessionExerciseTestHelper {
         return new CreateSessionExerciseDTO(
             ROUNDS, SETS, REPETITIONS, SPRINTS, LocalTime.of(0, MINUTES), WEIGHT, DISTANCE, LocalDateTime.now(),
             LocalDateTime.now().plusHours(1), REST_TIME, STATUS_STARTED, EXERCISE_ORDER, EXERCISE_ID,
-            LocalDateTime.now(), UNIT_KILOMETERS, TYPE_OF_EXERCISE);
+            UNIT_KILOMETERS, TYPE_OF_EXERCISE, null);
     }
 
     /**
@@ -89,11 +90,13 @@ public final class SessionExerciseTestHelper {
         long trainingSessionId,
         LocalDateTime createdAt,
         String unit,
-        String typeOfExercise
+        String typeOfExercise,
+        String notes
     ) {
         return new SessionExerciseDTO(
             id, rounds, sets, repetitions, sprints, duration, weight, distance, startTime,
-            endTime, restTime, status, exerciseOrder, exerciseId, trainingSessionId, createdAt, unit, typeOfExercise);
+            endTime, restTime, status, exerciseOrder, exerciseId, trainingSessionId, createdAt, unit,
+            typeOfExercise, notes);
     }
 
     /**
@@ -103,7 +106,6 @@ public final class SessionExerciseTestHelper {
         return new SessionExerciseDTO(
             SESSION_EXERCISE_ID, ROUNDS, SETS, REPETITIONS, SPRINTS, LocalTime.of(0, MINUTES), WEIGHT, DISTANCE,
             LocalDateTime.now(), LocalDateTime.now().plusHours(1), REST_TIME, STATUS_STARTED, EXERCISE_ORDER,
-            EXERCISE_ID, TRAINING_SESSION_ID, LocalDateTime.now(), UNIT_KILOMETERS, TYPE_OF_EXERCISE);
+            EXERCISE_ID, TRAINING_SESSION_ID, LocalDateTime.now(), UNIT_KILOMETERS, TYPE_OF_EXERCISE, null);
     }
 }
-

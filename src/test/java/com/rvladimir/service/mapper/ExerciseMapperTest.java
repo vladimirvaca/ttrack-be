@@ -3,6 +3,7 @@ package com.rvladimir.service.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.rvladimir.domain.Exercise;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.service.dto.ExerciseDTO;
 
 import java.time.LocalDateTime;
@@ -37,7 +38,7 @@ public class ExerciseMapperTest {
             null,
             EXERCISE_NAME,
             EXERCISE_DESCRIPTION,
-            Exercise.Type.STRENGTH,
+            TypeOfExercise.STRENGTH,
             EXERCISE_IMAGE
         );
 
@@ -49,7 +50,7 @@ public class ExerciseMapperTest {
         assertThat(exercise.getId()).isNull();
         assertThat(exercise.getName()).isEqualTo(EXERCISE_NAME);
         assertThat(exercise.getDescription()).isEqualTo(EXERCISE_DESCRIPTION);
-        assertThat(exercise.getType()).isEqualTo(Exercise.Type.STRENGTH);
+        assertThat(exercise.getType()).isEqualTo(TypeOfExercise.STRENGTH);
         assertThat(exercise.getImage()).isEqualTo(EXERCISE_IMAGE);
     }
 
@@ -69,7 +70,7 @@ public class ExerciseMapperTest {
         exercise.setId(EXERCISE_ID);
         exercise.setName(EXERCISE_NAME);
         exercise.setDescription(EXERCISE_DESCRIPTION);
-        exercise.setType(Exercise.Type.STRENGTH);
+        exercise.setType(TypeOfExercise.STRENGTH);
         exercise.setImage(EXERCISE_IMAGE);
 
         // When
@@ -80,7 +81,7 @@ public class ExerciseMapperTest {
         assertThat(exerciseDTO.getId()).isEqualTo(EXERCISE_ID);
         assertThat(exerciseDTO.getName()).isEqualTo(EXERCISE_NAME);
         assertThat(exerciseDTO.getDescription()).isEqualTo(EXERCISE_DESCRIPTION);
-        assertThat(exerciseDTO.getType()).isEqualTo(Exercise.Type.STRENGTH);
+        assertThat(exerciseDTO.getType()).isEqualTo(TypeOfExercise.STRENGTH);
         assertThat(exerciseDTO.getImage()).isEqualTo(EXERCISE_IMAGE);
     }
 
@@ -100,7 +101,7 @@ public class ExerciseMapperTest {
         exercise.setId(EXERCISE_ID);
         exercise.setName(EXERCISE_NAME);
         exercise.setDescription(EXERCISE_DESCRIPTION);
-        exercise.setType(Exercise.Type.CARDIO);
+        exercise.setType(TypeOfExercise.CARDIO);
         exercise.setImage(EXERCISE_IMAGE);
 
         // When
@@ -111,13 +112,13 @@ public class ExerciseMapperTest {
         assertThat(exerciseDTO.getId()).isEqualTo(EXERCISE_ID);
         assertThat(exerciseDTO.getName()).isEqualTo(EXERCISE_NAME);
         assertThat(exerciseDTO.getDescription()).isEqualTo(EXERCISE_DESCRIPTION);
-        assertThat(exerciseDTO.getType()).isEqualTo(Exercise.Type.CARDIO);
+        assertThat(exerciseDTO.getType()).isEqualTo(TypeOfExercise.CARDIO);
         assertThat(exerciseDTO.getImage()).isEqualTo(EXERCISE_IMAGE);
     }
 
     @ParameterizedTest
-    @EnumSource(Exercise.Type.class)
-    void testToEntityFromExerciseDTOWithAllTypes(Exercise.Type type) {
+    @EnumSource(TypeOfExercise.class)
+    void testToEntityFromExerciseDTOWithAllTypes(TypeOfExercise type) {
         // Given
         ExerciseDTO exerciseDTO = new ExerciseDTO(
             null,
@@ -136,8 +137,8 @@ public class ExerciseMapperTest {
     }
 
     @ParameterizedTest
-    @EnumSource(Exercise.Type.class)
-    void testToDtoWithAllTypes(Exercise.Type type) {
+    @EnumSource(TypeOfExercise.class)
+    void testToDtoWithAllTypes(TypeOfExercise type) {
         // Given
         Exercise exercise = new Exercise();
         exercise.setId(EXERCISE_ID);
@@ -162,7 +163,7 @@ public class ExerciseMapperTest {
             null,
             EXERCISE_NAME,
             EXERCISE_DESCRIPTION,
-            Exercise.Type.STRENGTH,
+            TypeOfExercise.STRENGTH,
             EXERCISE_IMAGE
         );
 
@@ -181,7 +182,7 @@ public class ExerciseMapperTest {
             null,
             "",
             "",
-            Exercise.Type.STRENGTH,
+            TypeOfExercise.STRENGTH,
             ""
         );
 
@@ -202,7 +203,7 @@ public class ExerciseMapperTest {
             null,
             EXERCISE_NAME,
             EXERCISE_DESCRIPTION,
-            Exercise.Type.STRENGTH,
+            TypeOfExercise.STRENGTH,
             EXERCISE_IMAGE
         );
         ExerciseDTO copy = new ExerciseDTO(
@@ -227,7 +228,7 @@ public class ExerciseMapperTest {
         exercise.setId(EXERCISE_ID);
         exercise.setName(EXERCISE_NAME);
         exercise.setDescription(EXERCISE_DESCRIPTION);
-        exercise.setType(Exercise.Type.STRENGTH);
+        exercise.setType(TypeOfExercise.STRENGTH);
         exercise.setImage(EXERCISE_IMAGE);
         exercise.setCreatedAt(LocalDateTime.now());
         Exercise copy = new Exercise();

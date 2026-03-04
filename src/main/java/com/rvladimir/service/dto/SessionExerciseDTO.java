@@ -22,7 +22,7 @@ public class SessionExerciseDTO {
     private Integer sets;
     private Integer repetitions;
     private Integer sprints;
-    private LocalTime time;
+    private LocalTime duration;
     private Double weight;
     private Double distance;
     private LocalDateTime startTime;
@@ -35,4 +35,5 @@ public class SessionExerciseDTO {
     private LocalDateTime createdAt;
     private String unitOfMeasurement;
     private String typeOfExercise;
+    private String notes;
 }

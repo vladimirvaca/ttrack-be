@@ -7,11 +7,14 @@ import jakarta.inject.Singleton;
 
 import java.time.LocalDateTime;
 
+/**
+ * Mapper for Exercise and ExerciseDTO.
+ */
 @Singleton
 public class ExerciseMapper {
 
     /**
-     * Convert ExerciseDTO to Exercise entity
+     * Convert ExerciseDTO to Exercise entity.
      * @param exerciseDTO the DTO to convert
      * @return the Exercise entity
      */
@@ -30,7 +33,7 @@ public class ExerciseMapper {
     }
 
     /**
-     * Convert Exercise entity to ExerciseDTO
+     * Convert Exercise entity to ExerciseDTO.
      * @param exercise the entity to convert
      * @return the ExerciseDTO
      */

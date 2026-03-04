@@ -1,6 +1,6 @@
 package com.rvladimir.service.dto;
 
-import com.rvladimir.domain.Exercise;
+import com.rvladimir.domain.TypeOfExercise;
 
 import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +12,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO for Exercise response and creation.
+ */
 @Serdeable
 @Data
 @NoArgsConstructor
@@ -33,7 +36,7 @@ public class ExerciseDTO {
 
     @NotNull
     @Schema(description = "The exercise type", example = "STRENGTH")
-    private Exercise.Type type;
+    private TypeOfExercise type;
 
     @NotNull
     @NotBlank

@@ -3,7 +3,7 @@ package com.rvladimir.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.rvladimir.domain.Exercise;
-import com.rvladimir.domain.Exercise.Type;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.test.PostgresTestContainer;
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
@@ -29,11 +29,11 @@ class ExerciseRepositoryIntegrationTest implements TestPropertyProvider {
 
     private static final String TEST_NAME = "Push Up";
     private static final String TEST_DESCRIPTION = "A basic upper body exercise";
-    private static final Type TEST_TYPE = Type.STRENGTH;
+    private static final TypeOfExercise TEST_TYPE = TypeOfExercise.STRENGTH;
     private static final String TEST_IMAGE = "pushup.png";
     private static final String TEST_NAME_2 = "Squat";
     private static final String TEST_DESCRIPTION_2 = "A basic lower body exercise";
-    private static final Type TEST_TYPE_2 = Type.BALANCE;
+    private static final TypeOfExercise TEST_TYPE_2 = TypeOfExercise.BALANCE;
     private static final String TEST_IMAGE_2 = "squat.png";
     private static final long NON_EXISTING_ID = 999L;
 

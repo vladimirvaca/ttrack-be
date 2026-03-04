@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * DTO for creating a SessionExercise.
+ * All metric fields are optional to support any exercise modality.
+ * The {@code createdAt} timestamp is assigned server-side and must not be provided by the client.
  */
 @Serdeable
 @Data
@@ -26,7 +28,8 @@ public class CreateSessionExerciseDTO {
 
     private Integer sprints;
 
-    private LocalTime time;
+    /** Duration of the exercise (e.g. how long a round or session lasted). */
+    private LocalTime duration;
 
     private Double weight;
 
@@ -44,9 +47,10 @@ public class CreateSessionExerciseDTO {
 
     private Long exerciseId;
 
-    private LocalDateTime createdAt;
-
     private String unitOfMeasurement;
 
     private String typeOfExercise;
+
+    /** Free-text notes or observations about this exercise execution. */
+    private String notes;
 }

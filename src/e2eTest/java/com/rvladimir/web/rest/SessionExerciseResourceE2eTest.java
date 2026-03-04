@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.rvladimir.domain.Exercise;
 import com.rvladimir.domain.TrainingSession;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.domain.User;
 import com.rvladimir.repository.ExerciseRepository;
 import com.rvladimir.repository.SessionExerciseRepository;
@@ -76,6 +77,7 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     private static final String TYPE_BOXING_BAG = "BOXING_BAG";
     private static final String TYPE_SHADOW_BOXING = "SHADOW_BOXING";
     private static final String TYPE_STRENGTH = "STRENGTH";
+    private static final String TEST_NOTES = "Felt strong, good session";
 
     @Container
     static PostgreSQLContainer<?> postgres = PostgresTestContainer.getInstance();
@@ -118,24 +120,31 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
         return userRepository.save(TestDataFactory.createUser(email));
     }
 
+    private Exercise createAndSaveExercise() {
+        return exerciseRepository.save(
+            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
+                TypeOfExercise.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
+        );
+    }
+
+    private TrainingSession createAndSaveSession(User user) {
+        return trainingSessionRepository.save(
+            new TrainingSession(null, null, null, TrainingSession.Status.STARTED, user, LocalDateTime.now())
+        );
+    }
+
     @Test
     void testCreateSessionExerciseEndToEndSuccess() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, TYPE_BOXING_BAG
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
 
@@ -150,6 +159,7 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
         assertThat(response.body().getTrainingSessionId()).isEqualTo(session.getId());
         assertThat(response.body().getExerciseId()).isEqualTo(exercise.getId());
         assertThat(response.body().getTypeOfExercise()).isEqualTo(TYPE_BOXING_BAG);
+        assertThat(response.body().getCreatedAt()).isNotNull();
         assertThat(sessionExerciseRepository.count()).isEqualTo(EXPECTED_SESSION_EXERCISE_COUNT_ONE);
     }
 
@@ -157,16 +167,13 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testCreateSessionExerciseMissingRequiredFieldsReturns400() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             null, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            null, LocalDateTime.now(), UNIT_KILOMETERS, null
+            null, UNIT_KILOMETERS, null, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
 
@@ -184,27 +191,21 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testMultipleSessionExercisesCanBeCreated() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto1 = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, TYPE_BOXING_BAG
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, null
         );
         CreateSessionExerciseDTO dto2 = new CreateSessionExerciseDTO(
             TEST_ROUNDS + 1, TEST_SETS_2, TEST_REPS_2, null,
             LocalTime.of(0, TEST_TIME_MIN_2), TEST_WEIGHT_2, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_2),
             TEST_REST_TIME_2, STATUS_IN_PROGRESS, TEST_EXERCISE_ORDER_2,
-            exercise.getId(), LocalDateTime.now(), UNIT_MILES, TYPE_SHADOW_BOXING
+            exercise.getId(), UNIT_MILES, TYPE_SHADOW_BOXING, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
 
@@ -220,27 +221,21 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testGetSessionExercisesByTrainingSessionReturnsList() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto1 = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, TYPE_BOXING_BAG
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, null
         );
         CreateSessionExerciseDTO dto2 = new CreateSessionExerciseDTO(
             TEST_ROUNDS + 1, TEST_SETS_2, TEST_REPS_2, null,
             LocalTime.of(0, TEST_TIME_MIN_2), TEST_WEIGHT_2, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_2),
             TEST_REST_TIME_2, STATUS_IN_PROGRESS, TEST_EXERCISE_ORDER_2,
-            exercise.getId(), LocalDateTime.now(), UNIT_MILES, TYPE_SHADOW_BOXING
+            exercise.getId(), UNIT_MILES, TYPE_SHADOW_BOXING, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
         client.toBlocking().exchange(HttpRequest.POST(endpoint, dto1), SessionExerciseDTO.class);
@@ -248,9 +243,8 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
         String getEndpoint = String.format(ENDPOINT_GET_BY_SESSION, session.getId());
 
         // When
-        HttpRequest<?> request = HttpRequest.GET(getEndpoint);
         HttpResponse<List<SessionExerciseDTO>> response = client.toBlocking().exchange(
-            request, Argument.listOf(SessionExerciseDTO.class)
+            HttpRequest.GET(getEndpoint), Argument.listOf(SessionExerciseDTO.class)
         );
         List<SessionExerciseDTO> result;
         if (response.body() != null) {
@@ -269,20 +263,14 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testCreateSessionExerciseWithNullTypeOfExercise() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, null
+            exercise.getId(), UNIT_KILOMETERS, null, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
 
@@ -300,20 +288,14 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testCreateSessionExerciseWithBoxingBagTypeIsPersistedCorrectly() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, TYPE_BOXING_BAG
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
 
@@ -330,20 +312,14 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testCreateSessionExerciseWithShadowBoxingTypeIsPersistedCorrectly() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, TYPE_SHADOW_BOXING
+            exercise.getId(), UNIT_KILOMETERS, TYPE_SHADOW_BOXING, null
         );
         String endpoint = String.format(ENDPOINT_CREATE, session.getId());
 
@@ -360,20 +336,14 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     void testGetSessionExercisesReturnsTypeOfExercise() {
         // Given
         User user = createAndSaveUser(TEST_USER_EMAIL);
-        Exercise exercise = exerciseRepository.save(
-            new Exercise(null, TEST_EXERCISE_NAME, TEST_EXERCISE_DESC,
-                Exercise.Type.STRENGTH, TEST_EXERCISE_IMG, LocalDateTime.now())
-        );
-        TrainingSession session = trainingSessionRepository.save(
-            new TrainingSession(null, null, null, TrainingSession.Status.STARTED,
-                user, LocalDateTime.now())
-        );
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
             TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
             LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
             LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
             TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
-            exercise.getId(), LocalDateTime.now(), UNIT_KILOMETERS, TYPE_STRENGTH
+            exercise.getId(), UNIT_KILOMETERS, TYPE_STRENGTH, null
         );
         String createEndpoint = String.format(ENDPOINT_CREATE, session.getId());
         client.toBlocking().exchange(HttpRequest.POST(createEndpoint, dto), SessionExerciseDTO.class);
@@ -391,10 +361,84 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     }
 
     @Test
+    void testCreateSessionExerciseWithNotesIsPersistedCorrectly() {
+        // Given
+        User user = createAndSaveUser(TEST_USER_EMAIL);
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
+        CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
+            TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
+            LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
+            LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
+            TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, TEST_NOTES
+        );
+        String endpoint = String.format(ENDPOINT_CREATE, session.getId());
+
+        // When
+        HttpResponse<SessionExerciseDTO> response =
+            client.toBlocking().exchange(HttpRequest.POST(endpoint, dto), SessionExerciseDTO.class);
+
+        // Then
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getNotes()).isEqualTo(TEST_NOTES);
+    }
+
+    @Test
+    void testCreateSessionExerciseWithNullNotesIsAllowed() {
+        // Given
+        User user = createAndSaveUser(TEST_USER_EMAIL);
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
+        CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
+            TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
+            LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
+            LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
+            TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, null
+        );
+        String endpoint = String.format(ENDPOINT_CREATE, session.getId());
+
+        // When
+        HttpResponse<SessionExerciseDTO> response =
+            client.toBlocking().exchange(HttpRequest.POST(endpoint, dto), SessionExerciseDTO.class);
+
+        // Then
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getNotes()).isNull();
+    }
+
+    @Test
+    void testCreatedAtIsSetByServerNotClient() {
+        // Given
+        User user = createAndSaveUser(TEST_USER_EMAIL);
+        Exercise exercise = createAndSaveExercise();
+        TrainingSession session = createAndSaveSession(user);
+        LocalDateTime before = LocalDateTime.now();
+        CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
+            TEST_ROUNDS, TEST_SETS, TEST_REPS, null,
+            LocalTime.of(0, TEST_TIME_MIN_1), TEST_WEIGHT_1, null,
+            LocalDateTime.now(), LocalDateTime.now().plusMinutes(TEST_TIME_MIN_1),
+            TEST_REST_TIME_1, STATUS_STARTED, TEST_EXERCISE_ORDER_1,
+            exercise.getId(), UNIT_KILOMETERS, TYPE_BOXING_BAG, null
+        );
+        String endpoint = String.format(ENDPOINT_CREATE, session.getId());
+
+        // When
+        HttpResponse<SessionExerciseDTO> response =
+            client.toBlocking().exchange(HttpRequest.POST(endpoint, dto), SessionExerciseDTO.class);
+        LocalDateTime after = LocalDateTime.now();
+
+        // Then
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getCreatedAt()).isNotNull();
+        assertThat(response.body().getCreatedAt()).isAfterOrEqualTo(before).isBeforeOrEqualTo(after);
+    }
+
+    @Test
     void testGetSessionExercisesForNonExistingSessionReturnsEmptyList() {
         // Given
-        long nonExistingSessionId = NON_EXISTING_SESSION_ID;
-        String getEndpoint = String.format(ENDPOINT_GET_BY_SESSION, nonExistingSessionId);
+        String getEndpoint = String.format(ENDPOINT_GET_BY_SESSION, NON_EXISTING_SESSION_ID);
 
         // When
         HttpResponse<List<SessionExerciseDTO>> response = client.toBlocking().exchange(

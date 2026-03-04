@@ -9,13 +9,17 @@ import com.rvladimir.service.dto.SessionExerciseDTO;
 
 import jakarta.inject.Singleton;
 
+import java.time.LocalDateTime;
+
 /**
  * Mapper for SessionExercise and its DTOs.
  */
 @Singleton
 public class SessionExerciseMapper {
+
     /**
      * Maps CreateSessionExerciseDTO to SessionExercise entity.
+     * The {@code createdAt} field is set server-side to the current timestamp.
      */
     public SessionExercise toEntity(CreateSessionExerciseDTO dto, Exercise exercise, TrainingSession trainingSession) {
         SessionExercise entity = new SessionExercise();
@@ -23,7 +27,7 @@ public class SessionExerciseMapper {
         entity.setSets(dto.getSets());
         entity.setRepetitions(dto.getRepetitions());
         entity.setSprints(dto.getSprints());
-        entity.setTime(dto.getTime());
+        entity.setDuration(dto.getDuration());
         entity.setWeight(dto.getWeight());
         entity.setDistance(dto.getDistance());
         entity.setStartTime(dto.getStartTime());
@@ -35,13 +39,14 @@ public class SessionExerciseMapper {
         entity.setExerciseOrder(dto.getExerciseOrder());
         entity.setExercise(exercise);
         entity.setTrainingSession(trainingSession);
-        entity.setCreatedAt(dto.getCreatedAt());
+        entity.setCreatedAt(LocalDateTime.now());
         if (dto.getUnitOfMeasurement() != null) {
             entity.setUnitOfMeasurement(SessionExercise.UnitOfMeasurement.valueOf(dto.getUnitOfMeasurement()));
         }
         if (dto.getTypeOfExercise() != null) {
             entity.setTypeOfExercise(TypeOfExercise.valueOf(dto.getTypeOfExercise()));
         }
+        entity.setNotes(dto.getNotes());
         return entity;
     }
 
@@ -75,7 +80,7 @@ public class SessionExerciseMapper {
             entity.getSets(),
             entity.getRepetitions(),
             entity.getSprints(),
-            entity.getTime(),
+            entity.getDuration(),
             entity.getWeight(),
             entity.getDistance(),
             entity.getStartTime(),
@@ -87,7 +92,8 @@ public class SessionExerciseMapper {
             trainingSessionId,
             entity.getCreatedAt(),
             unitOfMeasurement,
-            typeOfExercise
+            typeOfExercise,
+            entity.getNotes()
         );
     }
 }

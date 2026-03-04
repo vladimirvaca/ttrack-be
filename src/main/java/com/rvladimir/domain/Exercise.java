@@ -20,6 +20,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Entity representing an exercise in the exercise catalog.
+ * Maps to ttrack.exercise table.
+ */
 @Serdeable
 @Entity
 @Data
@@ -43,7 +47,7 @@ public class Exercise {
     @NotNull
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private TypeOfExercise type;
 
     @NotNull
     @Column(nullable = false)
@@ -52,14 +56,4 @@ public class Exercise {
     @NotNull
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
-    public enum Type {
-        STRENGTH,
-        CARDIO,
-        FLEXIBILITY,
-        BALANCE,
-        HYPERTROPHY,
-        HIIT,
-        PLYOMETRICS
-    }
 }

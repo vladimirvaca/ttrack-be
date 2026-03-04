@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.rvladimir.domain.Exercise;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.repository.ExerciseRepository;
 import com.rvladimir.service.dto.ExerciseDTO;
 import com.rvladimir.service.mapper.ExerciseMapper;
@@ -34,11 +35,11 @@ class ExerciseServiceImplTest {
     private static final long EXERCISE_ID_2 = 2L;
     private static final String EXERCISE_NAME = "Push-ups";
     private static final String EXERCISE_DESCRIPTION = "Upper body strength exercise";
-    private static final Exercise.Type EXERCISE_TYPE = Exercise.Type.STRENGTH;
+    private static final TypeOfExercise EXERCISE_TYPE = TypeOfExercise.STRENGTH;
     private static final String EXERCISE_IMAGE = "https://example.com/pushups.jpg";
     private static final String DIFFERENT_NAME = "Squats";
     private static final String DIFFERENT_DESCRIPTION = "Lower body strength exercise";
-    private static final Exercise.Type DIFFERENT_TYPE = Exercise.Type.BALANCE;
+    private static final TypeOfExercise DIFFERENT_TYPE = TypeOfExercise.BALANCE;
     private static final String DIFFERENT_IMAGE = "https://example.com/squats.jpg";
     private static final int YEAR_2026 = 2026;
     private static final int MONTH_JANUARY = 1;

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.service.ExerciseService;
 import com.rvladimir.service.dto.ExerciseDTO;
 
@@ -36,7 +37,7 @@ class ExerciseResourceTest {
     private static final Long EXERCISE_ID = 1L;
     private static final String EXERCISE_NAME = "Push-ups";
     private static final String EXERCISE_DESCRIPTION = "Upper body strength exercise";
-    private static final String EXERCISE_TYPE = "STRENGTH";
+    private static final TypeOfExercise EXERCISE_TYPE = TypeOfExercise.STRENGTH;
     private static final String EXERCISE_IMAGE = "https://example.com/pushups.jpg";
     private static final String ENDPOINT_EXERCISE = "/exercise";
 
@@ -55,13 +56,8 @@ class ExerciseResourceTest {
     @Test
     void testCreateExerciseSuccess() {
         // Given
-        ExerciseDTO exerciseDTO =
-            new ExerciseDTO(
-                EXERCISE_ID,
-                EXERCISE_NAME,
-                EXERCISE_DESCRIPTION,
-                com.rvladimir.domain.Exercise.Type.valueOf(EXERCISE_TYPE),
-                EXERCISE_IMAGE);
+        ExerciseDTO exerciseDTO = new ExerciseDTO(
+            EXERCISE_ID, EXERCISE_NAME, EXERCISE_DESCRIPTION, EXERCISE_TYPE, EXERCISE_IMAGE);
         when(exerciseService.create(any(ExerciseDTO.class))).thenReturn(exerciseDTO);
 
         // When
@@ -73,7 +69,7 @@ class ExerciseResourceTest {
         assertThat(response.body()).isNotNull();
         assertThat(response.body().getName()).isEqualTo(EXERCISE_NAME);
         assertThat(response.body().getDescription()).isEqualTo(EXERCISE_DESCRIPTION);
-        assertThat(response.body().getType().name()).isEqualTo(EXERCISE_TYPE);
+        assertThat(response.body().getType()).isEqualTo(EXERCISE_TYPE);
         assertThat(response.body().getImage()).isEqualTo(EXERCISE_IMAGE);
         verify(exerciseService).create(any(ExerciseDTO.class));
     }
@@ -81,38 +77,25 @@ class ExerciseResourceTest {
     @Test
     void testCreateExerciseValidationErrorEmptyName() {
         // Given
-        ExerciseDTO exerciseDTO =
-            new ExerciseDTO(
-                EXERCISE_ID,
-                "",
-                EXERCISE_DESCRIPTION,
-                com.rvladimir.domain.Exercise.Type.valueOf(EXERCISE_TYPE),
-                EXERCISE_IMAGE);
+        ExerciseDTO exerciseDTO = new ExerciseDTO(
+            EXERCISE_ID, "", EXERCISE_DESCRIPTION, EXERCISE_TYPE, EXERCISE_IMAGE);
 
         // When & Then
         HttpRequest<ExerciseDTO> request = HttpRequest.POST(ENDPOINT_EXERCISE, exerciseDTO);
         HttpClientResponseException thrown = org.junit.jupiter.api.Assertions.assertThrows(
-            HttpClientResponseException.class, () -> client.toBlocking()
-                .exchange(request, ExerciseDTO.class));
+            HttpClientResponseException.class,
+            () -> client.toBlocking().exchange(request, ExerciseDTO.class));
         assertThat(thrown.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
-
-        // Optionally verify service was never called
         verify(exerciseService, org.mockito.Mockito.never()).create(any(ExerciseDTO.class));
     }
 
     @Test
     void testGetAllExercisesSuccess() {
         // Given
-        Page<ExerciseDTO> page =
-            Page.of(
-                Collections.singletonList(
-                    new ExerciseDTO(
-                        EXERCISE_ID,
-                        EXERCISE_NAME,
-                        EXERCISE_DESCRIPTION,
-                        com.rvladimir.domain.Exercise.Type.valueOf(EXERCISE_TYPE),
-                        EXERCISE_IMAGE)),
-                Pageable.from(0), 1L);
+        Page<ExerciseDTO> page = Page.of(
+            Collections.singletonList(
+                new ExerciseDTO(EXERCISE_ID, EXERCISE_NAME, EXERCISE_DESCRIPTION, EXERCISE_TYPE, EXERCISE_IMAGE)),
+            Pageable.from(0), 1L);
         when(exerciseService.getAll(any(Pageable.class))).thenReturn(page);
 
         // When

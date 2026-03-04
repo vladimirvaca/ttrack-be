@@ -3,7 +3,7 @@ package com.rvladimir.web.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.rvladimir.domain.Exercise;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.repository.ExerciseRepository;
 import com.rvladimir.service.dto.ExerciseDTO;
 import com.rvladimir.test.PostgresTestContainer;
@@ -40,7 +40,7 @@ class ExerciseResourceE2eTest implements TestPropertyProvider {
     private static final String ENDPOINT_EXERCISE = "/exercise";
     private static final String TEST_NAME = "Push-ups";
     private static final String TEST_DESCRIPTION = "Upper body strength exercise";
-    private static final Exercise.Type TEST_TYPE = Exercise.Type.STRENGTH;
+    private static final TypeOfExercise TEST_TYPE = TypeOfExercise.STRENGTH;
     private static final String TEST_IMAGE = "https://example.com/pushups.jpg";
     private static final String SQUATS_NAME = "Squats";
     private static final String SQUATS_DESCRIPTION = "Lower body strength exercise";

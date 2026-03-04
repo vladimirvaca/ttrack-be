@@ -35,7 +35,7 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
     private static final String TEST_USER_EMAIL = "session.exercise.user@example.com";
     private static final String TEST_EXERCISE_NAME = "Burpee";
     private static final String TEST_EXERCISE_DESCRIPTION = "Full body exercise";
-    private static final Exercise.Type TEST_EXERCISE_TYPE = Exercise.Type.HIIT;
+    private static final TypeOfExercise TEST_EXERCISE_TYPE = TypeOfExercise.HIIT;
     private static final String TEST_EXERCISE_IMAGE = "burpee.png";
     private static final int TEST_ROUNDS = 3;
     private static final int TEST_SETS = 5;
@@ -43,7 +43,7 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
     private static final int TEST_SPRINTS = 0;
     private static final double TEST_WEIGHT = 0.0;
     private static final double TEST_DISTANCE = 0.0;
-    private static final LocalTime TEST_TIME = LocalTime.of(0, 30, 0);
+    private static final LocalTime TEST_DURATION = LocalTime.of(0, 30, 0);
     private static final int TEST_REST_TIME = 60;
     private static final int TEST_ORDER = 1;
     private static final SessionExercise.Status TEST_STATUS = SessionExercise.Status.STARTED;
@@ -52,6 +52,7 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
     private static final long NON_EXISTING_ID = 999L;
     private static final int TEST_PLUS_MINUTES = 30;
     private static final int TEST_UPDATED_ROUNDS = 10;
+    private static final String TEST_UPDATED_NOTES = "Updated notes after review";
 
     @Container
     static PostgreSQLContainer<?> postgres = PostgresTestContainer.getInstance();
@@ -115,7 +116,7 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
             TEST_SETS,
             TEST_REPETITIONS,
             TEST_SPRINTS,
-            TEST_TIME,
+            TEST_DURATION,
             TEST_WEIGHT,
             TEST_DISTANCE,
             LocalDateTime.now(),
@@ -127,7 +128,8 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
             session,
             LocalDateTime.now(),
             TEST_UNIT,
-            TEST_TYPE_OF_EXERCISE
+            TEST_TYPE_OF_EXERCISE,
+            null
         );
     }
 
@@ -275,5 +277,85 @@ class SessionExerciseRepositoryIntegrationTest implements TestPropertyProvider {
 
         // Then
         assertThat(updated.getTypeOfExercise()).isEqualTo(TypeOfExercise.SHADOW_BOXING);
+    }
+
+    @Test
+    void testSaveSessionExerciseWithDurationIsPersistedCorrectly() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+
+        // When
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // Then
+        assertThat(saved.getDuration()).isEqualTo(TEST_DURATION);
+    }
+
+    @Test
+    void testSaveSessionExerciseWithNullDuration() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+        sessionExercise.setDuration(null);
+
+        // When
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // Then
+        assertThat(saved.getDuration()).isNull();
+    }
+
+    @Test
+    void testSaveAndRetrieveNotes() {
+        // Given
+        String expectedNotes = "Used resistance band, felt great";
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+        sessionExercise.setNotes(expectedNotes);
+
+        // When
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // Then
+        assertThat(saved.getNotes()).isEqualTo(expectedNotes);
+    }
+
+    @Test
+    void testSaveSessionExerciseWithNullNotesIsAllowed() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+
+        // When
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // Then
+        assertThat(saved.getNotes()).isNull();
+    }
+
+    @Test
+    void testUpdateNotes() {
+        // Given
+        User user = createAndSaveUser();
+        TrainingSession session = createAndSaveTrainingSession(user);
+        Exercise exercise = createAndSaveExercise();
+        SessionExercise sessionExercise = buildSessionExercise(exercise, session);
+        SessionExercise saved = sessionExerciseRepository.save(sessionExercise);
+
+        // When
+        saved.setNotes(TEST_UPDATED_NOTES);
+        SessionExercise updated = sessionExerciseRepository.update(saved);
+
+        // Then
+        assertThat(updated.getNotes()).isEqualTo(TEST_UPDATED_NOTES);
     }
 }

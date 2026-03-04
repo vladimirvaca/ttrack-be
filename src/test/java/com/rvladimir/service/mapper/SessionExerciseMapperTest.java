@@ -25,7 +25,7 @@ class SessionExerciseMapperTest {
     private static final int SETS = 4;
     private static final int REPETITIONS = 12;
     private static final int SPRINTS = 2;
-    private static final LocalTime TIME = LocalTime.of(0, 45);
+    private static final LocalTime DURATION = LocalTime.of(0, 45);
     private static final double WEIGHT = 80.0;
     private static final double DISTANCE = 200.0;
     private static final int REST_TIME = 90;
@@ -35,10 +35,11 @@ class SessionExerciseMapperTest {
     private static final long TRAINING_SESSION_ID = 20L;
     private static final String UNIT_KILOMETERS = "KILOMETERS";
     private static final String TYPE_OF_EXERCISE = "BOXING_BAG";
+    private static final String NOTES = "Felt strong today";
     private static final LocalDateTime NOW = LocalDateTime.now();
     private static final long USER_ID = 100L;
     private static final String EXERCISE_NAME = "Bench Press";
-    private static final Exercise.Type EXERCISE_TYPE = Exercise.Type.STRENGTH;
+    private static final TypeOfExercise EXERCISE_TYPE = TypeOfExercise.STRENGTH;
     private static final String EXERCISE_IMAGE = "img.png";
     private static final String USER_FIRSTNAME = "John";
     private static final String USER_LASTNAME = "Doe";
@@ -68,8 +69,8 @@ class SessionExerciseMapperTest {
     void toEntityShouldMapDtoToEntity() {
         // Given
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
-            ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS, TYPE_OF_EXERCISE
+            ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, UNIT_KILOMETERS, TYPE_OF_EXERCISE, NOTES
         );
         Exercise exercise = buildExercise();
         TrainingSession trainingSession = buildTrainingSession();
@@ -82,7 +83,7 @@ class SessionExerciseMapperTest {
         assertThat(entity.getSets()).isEqualTo(SETS);
         assertThat(entity.getRepetitions()).isEqualTo(REPETITIONS);
         assertThat(entity.getSprints()).isEqualTo(SPRINTS);
-        assertThat(entity.getTime()).isEqualTo(TIME);
+        assertThat(entity.getDuration()).isEqualTo(DURATION);
         assertThat(entity.getWeight()).isEqualTo(WEIGHT);
         assertThat(entity.getDistance()).isEqualTo(DISTANCE);
         assertThat(entity.getStartTime()).isEqualTo(NOW);
@@ -92,9 +93,28 @@ class SessionExerciseMapperTest {
         assertThat(entity.getExerciseOrder()).isEqualTo(EXERCISE_ORDER);
         assertThat(entity.getExercise()).isEqualTo(exercise);
         assertThat(entity.getTrainingSession()).isEqualTo(trainingSession);
-        assertThat(entity.getCreatedAt()).isEqualTo(NOW);
+        assertThat(entity.getCreatedAt()).isNotNull().isBeforeOrEqualTo(LocalDateTime.now());
         assertThat(entity.getUnitOfMeasurement().name()).isEqualTo(UNIT_KILOMETERS);
         assertThat(entity.getTypeOfExercise()).isEqualTo(TypeOfExercise.BOXING_BAG);
+        assertThat(entity.getNotes()).isEqualTo(NOTES);
+    }
+
+    @Test
+    void toEntityShouldSetCreatedAtServerSide() {
+        // Given
+        LocalDateTime before = LocalDateTime.now();
+        CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
+            ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, UNIT_KILOMETERS, TYPE_OF_EXERCISE, null
+        );
+
+        // When
+        SessionExercise entity = mapper.toEntity(dto, buildExercise(), buildTrainingSession());
+        LocalDateTime after = LocalDateTime.now();
+
+        // Then
+        assertThat(entity.getCreatedAt()).isNotNull();
+        assertThat(entity.getCreatedAt()).isAfterOrEqualTo(before).isBeforeOrEqualTo(after);
     }
 
     @Test
@@ -103,9 +123,9 @@ class SessionExerciseMapperTest {
         Exercise exercise = buildExercise();
         TrainingSession trainingSession = buildTrainingSession();
         SessionExercise entity = new SessionExercise(
-            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
             REST_TIME, SessionExercise.Status.valueOf(STATUS), EXERCISE_ORDER, exercise, trainingSession, NOW,
-            SessionExercise.UnitOfMeasurement.valueOf(UNIT_KILOMETERS), TypeOfExercise.valueOf(TYPE_OF_EXERCISE)
+            SessionExercise.UnitOfMeasurement.valueOf(UNIT_KILOMETERS), TypeOfExercise.valueOf(TYPE_OF_EXERCISE), NOTES
         );
 
         // When
@@ -117,7 +137,7 @@ class SessionExerciseMapperTest {
         assertThat(dto.getSets()).isEqualTo(SETS);
         assertThat(dto.getRepetitions()).isEqualTo(REPETITIONS);
         assertThat(dto.getSprints()).isEqualTo(SPRINTS);
-        assertThat(dto.getTime()).isEqualTo(TIME);
+        assertThat(dto.getDuration()).isEqualTo(DURATION);
         assertThat(dto.getWeight()).isEqualTo(WEIGHT);
         assertThat(dto.getDistance()).isEqualTo(DISTANCE);
         assertThat(dto.getStartTime()).isEqualTo(NOW);
@@ -130,14 +150,15 @@ class SessionExerciseMapperTest {
         assertThat(dto.getCreatedAt()).isEqualTo(NOW);
         assertThat(dto.getUnitOfMeasurement()).isEqualTo(UNIT_KILOMETERS);
         assertThat(dto.getTypeOfExercise()).isEqualTo(TYPE_OF_EXERCISE);
+        assertThat(dto.getNotes()).isEqualTo(NOTES);
     }
 
     @Test
-    void toEntityShouldHandleNullUnitOfMeasurement() {
+    void toEntityShouldHandleNullOptionalFields() {
         // Given
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
-            ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, null, null
+            ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, null, null, null
         );
         Exercise exercise = buildExercise();
         TrainingSession trainingSession = buildTrainingSession();
@@ -148,14 +169,15 @@ class SessionExerciseMapperTest {
         // Then
         assertThat(entity.getUnitOfMeasurement()).isNull();
         assertThat(entity.getTypeOfExercise()).isNull();
+        assertThat(entity.getNotes()).isNull();
     }
 
     @Test
     void toEntityShouldHandleNullStatus() {
         // Given
         CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
-            ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, null, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS, TYPE_OF_EXERCISE
+            ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, null, EXERCISE_ORDER, EXERCISE_ID, UNIT_KILOMETERS, TYPE_OF_EXERCISE, null
         );
         Exercise exercise = buildExercise();
         TrainingSession trainingSession = buildTrainingSession();
@@ -173,8 +195,8 @@ class SessionExerciseMapperTest {
         Exercise exercise = buildExercise();
         TrainingSession trainingSession = buildTrainingSession();
         SessionExercise entity = new SessionExercise(
-            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, null, EXERCISE_ORDER, exercise, trainingSession, NOW, null, null
+            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, null, EXERCISE_ORDER, exercise, trainingSession, NOW, null, null, null
         );
 
         // When
@@ -184,14 +206,15 @@ class SessionExerciseMapperTest {
         assertThat(dto.getStatus()).isNull();
         assertThat(dto.getTypeOfExercise()).isNull();
         assertThat(dto.getUnitOfMeasurement()).isNull();
+        assertThat(dto.getNotes()).isNull();
     }
 
     @Test
     void toDtoShouldHandleNullExerciseAndTrainingSession() {
         // Given
         SessionExercise entity = new SessionExercise(
-            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-            REST_TIME, SessionExercise.Status.STARTED, EXERCISE_ORDER, null, null, NOW, null, null
+            1L, ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+            REST_TIME, SessionExercise.Status.STARTED, EXERCISE_ORDER, null, null, NOW, null, null, null
         );
 
         // When
@@ -207,8 +230,8 @@ class SessionExerciseMapperTest {
         for (TypeOfExercise type : TypeOfExercise.values()) {
             // Given
             CreateSessionExerciseDTO dto = new CreateSessionExerciseDTO(
-                ROUNDS, SETS, REPETITIONS, SPRINTS, TIME, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
-                REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, NOW, UNIT_KILOMETERS, type.name()
+                ROUNDS, SETS, REPETITIONS, SPRINTS, DURATION, WEIGHT, DISTANCE, NOW, NOW.plusHours(1),
+                REST_TIME, STATUS, EXERCISE_ORDER, EXERCISE_ID, UNIT_KILOMETERS, type.name(), null
             );
             Exercise exercise = buildExercise();
             TrainingSession trainingSession = buildTrainingSession();

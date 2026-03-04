@@ -16,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * Entity representing a session exercise performed during a training session.
+ * All metric fields are nullable to support any exercise modality
+ * (weight training, HIIT, interval, cardio, boxing, etc.).
  * Maps to ttrack.session_exercise table.
  */
 @Serdeable
@@ -32,6 +35,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "session_exercise", schema = TtrackConstants.TTRACK_SCHEMA)
 public class SessionExercise {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,8 +52,9 @@ public class SessionExercise {
     @Column
     private Integer sprints;
 
-    @Column(name = "time")
-    private java.time.LocalTime time;
+    /** Duration of the exercise (e.g. how long a round or session lasted). */
+    @Column(name = "duration")
+    private LocalTime duration;
 
     @Column
     private Double weight;
@@ -91,6 +96,10 @@ public class SessionExercise {
     @Column(name = "type_of_exercise")
     @Enumerated(EnumType.STRING)
     private TypeOfExercise typeOfExercise;
+
+    /** Free-text notes or observations about this exercise execution. */
+    @Column
+    private String notes;
 
     /**
      * Unit of measurement for distance.

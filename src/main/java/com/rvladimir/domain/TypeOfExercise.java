@@ -1,7 +1,9 @@
 package com.rvladimir.domain;
 
 /**
- * Enum representing the type of exercise performed in a session.
+ * Enum representing the type/category of an exercise.
+ * Used both to classify exercises in the catalog and to describe how an exercise
+ * was performed within a training session.
  */
 public enum TypeOfExercise {
     /** Strength training, e.g. weightlifting, resistance exercises. */
@@ -12,12 +14,16 @@ public enum TypeOfExercise {
     FLEXIBILITY,
     /** Balance training, e.g. stability exercises, yoga poses. */
     BALANCE,
+    /** Hypertrophy training focused on muscle growth. */
+    HYPERTROPHY,
     /** Endurance training, e.g. long-distance running, swimming. */
     ENDURANCE,
     /** High-Intensity Interval Training. */
     HIIT,
     /** Plyometric training, e.g. jump squats, box jumps. */
     PLYOMETRIC,
+    /** Plyometrics — alias kept for backward compatibility. */
+    PLYOMETRICS,
     /** Calisthenics, e.g. push-ups, pull-ups, bodyweight exercises. */
     CALISTHENICS,
     /** Mobility training, e.g. dynamic stretching, foam rolling. */
@@ -31,4 +37,3 @@ public enum TypeOfExercise {
     /** Other type of exercise not listed above. */
     OTHER
 }
-
