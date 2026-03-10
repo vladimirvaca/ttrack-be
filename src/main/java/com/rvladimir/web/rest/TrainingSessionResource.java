@@ -2,6 +2,8 @@ package com.rvladimir.web.rest;
 
 import com.rvladimir.service.TrainingSessionService;
 import com.rvladimir.service.dto.CreateTrainingSessionDTO;
+import com.rvladimir.service.dto.QuickStartIntervalDTO;
+import com.rvladimir.service.dto.QuickStartIntervalResponseDTO;
 import com.rvladimir.service.dto.TrainingSessionDTO;
 
 import io.micronaut.http.HttpResponse;
@@ -44,6 +46,29 @@ public class TrainingSessionResource {
             );
         }
         return HttpResponse.created(trainingSessionDTO);
+    }
+
+    @ApiResponse(responseCode = "201", description = "Interval training session started successfully.")
+    @ApiResponse(responseCode = "400", description = "Invalid request data.")
+    @ApiResponse(responseCode = "404", description = "User not found.")
+    @Operation(
+        summary = "Quick start an interval training session",
+        description = "Atomically creates a TrainingSession and its first SessionExercise " +
+            "for interval-based training (HIIT, boxing bag, shadow boxing, etc.)."
+    )
+    @Post(uri = "/quick-start/interval")
+    public HttpResponse<QuickStartIntervalResponseDTO> quickStartInterval(
+        @Body @Valid QuickStartIntervalDTO quickStartIntervalDTO
+    ) {
+        log.info("Quick starting interval training for user ID: {}", quickStartIntervalDTO.getUserId());
+        QuickStartIntervalResponseDTO response = trainingSessionService.quickStartInterval(quickStartIntervalDTO);
+        log.info(
+            "Interval training quick started: sessionId={}, exerciseId={}, userId={}",
+            response.getTrainingSession().getId(),
+            response.getSessionExercise().getId(),
+            quickStartIntervalDTO.getUserId()
+        );
+        return HttpResponse.created(response);
     }
 
 }

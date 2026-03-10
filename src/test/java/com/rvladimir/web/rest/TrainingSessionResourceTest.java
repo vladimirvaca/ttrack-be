@@ -10,6 +10,9 @@ import static org.mockito.Mockito.when;
 import com.rvladimir.domain.TrainingSession;
 import com.rvladimir.service.TrainingSessionService;
 import com.rvladimir.service.dto.CreateTrainingSessionDTO;
+import com.rvladimir.service.dto.QuickStartIntervalDTO;
+import com.rvladimir.service.dto.QuickStartIntervalResponseDTO;
+import com.rvladimir.service.dto.SessionExerciseDTO;
 import com.rvladimir.service.dto.TrainingSessionDTO;
 import com.rvladimir.web.error.ValidationException;
 
@@ -25,6 +28,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
 
 import org.junit.jupiter.api.Test;
@@ -38,9 +42,11 @@ class TrainingSessionResourceTest {
     private static final long USER_ID_1 = 1L;
     private static final long USER_ID_2 = 2L;
     private static final long TRAINING_SESSION_ID = 1L;
+    private static final long SESSION_EXERCISE_ID = 10L;
     private static final String TEST_NAME = "Morning Workout";
     private static final String TEST_DESCRIPTION = "A quick morning workout routine";
     private static final String ENDPOINT_TRAINING_SESSION_CREATE = "/training-session/create";
+    private static final String ENDPOINT_QUICK_START_INTERVAL = "/training-session/quick-start/interval";
     private static final String VALIDATION_MESSAGE = "User not found";
     private static final String VALIDATION_FIELD = "userId";
     private static final String VALIDATION_CODE = "NOT_FOUND";
@@ -49,6 +55,12 @@ class TrainingSessionResourceTest {
     private static final int DAY_13 = 13;
     private static final int HOUR_10 = 10;
     private static final int MINUTE_30 = 30;
+    private static final int TEST_ROUNDS = 5;
+    private static final int TEST_SPRINTS = 10;
+    private static final int TEST_REST_TIME = 60;
+    private static final String TYPE_HIIT = "HIIT";
+    private static final String TYPE_BOXING_BAG = "BOXING_BAG";
+    private static final String STATUS_STARTED = "STARTED";
 
     @Inject
     @Client("/")
@@ -124,5 +136,124 @@ class TrainingSessionResourceTest {
             HttpRequest.POST(ENDPOINT_TRAINING_SESSION_CREATE, createTrainingSessionDTO);
         assertThatThrownBy(() -> client.toBlocking().exchange(request, TrainingSessionDTO.class))
             .isInstanceOf(HttpClientResponseException.class);
+    }
+
+    @Test
+    void testQuickStartIntervalSuccess() {
+        // Given
+        QuickStartIntervalDTO dto = new QuickStartIntervalDTO(
+            USER_ID_1, TYPE_HIIT, TEST_ROUNDS, TEST_SPRINTS,
+            LocalTime.of(0, MINUTE_30), TEST_REST_TIME, null, null
+        );
+
+        TrainingSessionDTO sessionDTO = new TrainingSessionDTO(
+            TRAINING_SESSION_ID, "Quick Start – HIIT", null,
+            TrainingSession.Status.STARTED, USER_ID_1,
+            LocalDateTime.of(YEAR_2026, JANUARY, DAY_13, HOUR_10, MINUTE_30)
+        );
+        SessionExerciseDTO exerciseDTO = new SessionExerciseDTO(
+            SESSION_EXERCISE_ID, TEST_ROUNDS, null, null, TEST_SPRINTS,
+            LocalTime.of(0, MINUTE_30), null, null, null, null,
+            TEST_REST_TIME, STATUS_STARTED, 1, null, TRAINING_SESSION_ID,
+            LocalDateTime.of(YEAR_2026, JANUARY, DAY_13, HOUR_10, MINUTE_30),
+            null, TYPE_HIIT, null
+        );
+        QuickStartIntervalResponseDTO responseDTO = new QuickStartIntervalResponseDTO(sessionDTO, exerciseDTO);
+
+        when(trainingSessionService.quickStartInterval(any(QuickStartIntervalDTO.class))).thenReturn(responseDTO);
+
+        // When
+        HttpRequest<QuickStartIntervalDTO> request = HttpRequest.POST(ENDPOINT_QUICK_START_INTERVAL, dto);
+        HttpResponse<QuickStartIntervalResponseDTO> response =
+            client.toBlocking().exchange(request, QuickStartIntervalResponseDTO.class);
+
+        // Then
+        assertThat(response.status().getCode()).isEqualTo(HttpStatus.CREATED.getCode());
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getTrainingSession()).isNotNull();
+        assertThat(response.body().getTrainingSession().getId()).isEqualTo(TRAINING_SESSION_ID);
+        assertThat(response.body().getTrainingSession().getStatus()).isEqualTo(TrainingSession.Status.STARTED);
+        assertThat(response.body().getSessionExercise()).isNotNull();
+        assertThat(response.body().getSessionExercise().getId()).isEqualTo(SESSION_EXERCISE_ID);
+        assertThat(response.body().getSessionExercise().getTypeOfExercise()).isEqualTo(TYPE_HIIT);
+
+        verify(trainingSessionService).quickStartInterval(any(QuickStartIntervalDTO.class));
+    }
+
+    @Test
+    void testQuickStartIntervalNullUserIdReturns400() {
+        // Given — userId is @NotNull so validation must fail
+        QuickStartIntervalDTO dto = new QuickStartIntervalDTO(
+            null, TYPE_HIIT, TEST_ROUNDS, TEST_SPRINTS,
+            LocalTime.of(0, MINUTE_30), TEST_REST_TIME, null, null
+        );
+
+        // When & Then
+        HttpRequest<QuickStartIntervalDTO> request = HttpRequest.POST(ENDPOINT_QUICK_START_INTERVAL, dto);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, QuickStartIntervalResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+    }
+
+    @Test
+    void testQuickStartIntervalUserNotFoundReturns400() {
+        // Given
+        QuickStartIntervalDTO dto = new QuickStartIntervalDTO(
+            USER_ID_2, TYPE_BOXING_BAG, TEST_ROUNDS, null, null, TEST_REST_TIME, null, null
+        );
+
+        when(trainingSessionService.quickStartInterval(any(QuickStartIntervalDTO.class)))
+            .thenThrow(new ValidationException(VALIDATION_MESSAGE, VALIDATION_FIELD, VALIDATION_CODE));
+
+        // When & Then
+        HttpRequest<QuickStartIntervalDTO> request = HttpRequest.POST(ENDPOINT_QUICK_START_INTERVAL, dto);
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, QuickStartIntervalResponseDTO.class))
+            .isInstanceOf(HttpClientResponseException.class)
+            .satisfies(ex -> {
+                HttpClientResponseException httpEx = (HttpClientResponseException) ex;
+                assertThat(httpEx.getStatus().getCode()).isEqualTo(HttpStatus.BAD_REQUEST.getCode());
+            });
+
+        verify(trainingSessionService).quickStartInterval(any(QuickStartIntervalDTO.class));
+    }
+
+    @Test
+    void testQuickStartIntervalWithOptionalFieldsOmitted() {
+        // Given — all optional fields are null (only userId is required)
+        QuickStartIntervalDTO dto = new QuickStartIntervalDTO(
+            USER_ID_1, null, null, null, null, null, null, null
+        );
+
+        TrainingSessionDTO sessionDTO = new TrainingSessionDTO(
+            TRAINING_SESSION_ID, "Quick Start – INTERVAL", null,
+            TrainingSession.Status.STARTED, USER_ID_1,
+            LocalDateTime.of(YEAR_2026, JANUARY, DAY_13, HOUR_10, MINUTE_30)
+        );
+        SessionExerciseDTO exerciseDTO = new SessionExerciseDTO(
+            SESSION_EXERCISE_ID, null, null, null, null, null,
+            null, null, null, null, null, STATUS_STARTED, 1,
+            null, TRAINING_SESSION_ID,
+            LocalDateTime.of(YEAR_2026, JANUARY, DAY_13, HOUR_10, MINUTE_30),
+            null, null, null
+        );
+        QuickStartIntervalResponseDTO responseDTO = new QuickStartIntervalResponseDTO(sessionDTO, exerciseDTO);
+
+        when(trainingSessionService.quickStartInterval(any(QuickStartIntervalDTO.class))).thenReturn(responseDTO);
+
+        // When
+        HttpRequest<QuickStartIntervalDTO> request = HttpRequest.POST(ENDPOINT_QUICK_START_INTERVAL, dto);
+        HttpResponse<QuickStartIntervalResponseDTO> response =
+            client.toBlocking().exchange(request, QuickStartIntervalResponseDTO.class);
+
+        // Then
+        assertThat(response.status().getCode()).isEqualTo(HttpStatus.CREATED.getCode());
+        assertThat(response.body()).isNotNull();
+        assertThat(response.body().getTrainingSession().getId()).isEqualTo(TRAINING_SESSION_ID);
+        assertThat(response.body().getSessionExercise().getTypeOfExercise()).isNull();
+
+        verify(trainingSessionService).quickStartInterval(any(QuickStartIntervalDTO.class));
     }
 }
