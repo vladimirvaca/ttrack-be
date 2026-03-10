@@ -19,9 +19,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Exercise response and creation payload")
 public class ExerciseDTO {
 
-    @Schema(description = "The exercise ID", example = "1")
+    @Schema(description = "The exercise's unique identifier", example = "1",
+        accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @NotNull

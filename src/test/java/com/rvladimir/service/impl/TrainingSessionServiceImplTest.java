@@ -48,9 +48,9 @@ class TrainingSessionServiceImplTest {
     private static final String USER_NOT_FOUND_MESSAGE = "User not found";
     private static final String VALIDATION_FIELD_USER_ID = "userId";
     private static final String VALIDATION_CODE_NOT_FOUND = "NOT_FOUND";
-    private static final String TYPE_HIIT = "HIIT";
-    private static final String TYPE_BOXING_BAG = "BOXING_BAG";
-    private static final String STATUS_STARTED = "STARTED";
+    private static final TypeOfExercise TYPE_HIIT = TypeOfExercise.HIIT;
+    private static final TypeOfExercise TYPE_BOXING_BAG = TypeOfExercise.BOXING_BAG;
+    private static final SessionExercise.Status STATUS_STARTED = SessionExercise.Status.STARTED;
     private static final String QUICK_START_HIIT = "Quick Start – HIIT";
     private static final String QUICK_START_INTERVAL = "Quick Start – INTERVAL";
     private static final String QUICK_START_BOXING_BAG = "Quick Start – BOXING_BAG";

@@ -3,7 +3,6 @@ package com.rvladimir.service.impl;
 import com.rvladimir.domain.Exercise;
 import com.rvladimir.domain.SessionExercise;
 import com.rvladimir.domain.TrainingSession;
-import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.repository.ExerciseRepository;
 import com.rvladimir.repository.SessionExerciseRepository;
 import com.rvladimir.repository.TrainingSessionRepository;
@@ -90,7 +89,7 @@ public class TrainingSessionServiceImpl implements TrainingSessionService {
         TrainingSession session = new TrainingSession();
         String label = DEFAULT_INTERVAL_LABEL;
         if (dto.getTypeOfExercise() != null) {
-            label = dto.getTypeOfExercise();
+            label = dto.getTypeOfExercise().name();
         }
         session.setName("Quick Start – " + label);
         session.setStatus(TrainingSession.Status.STARTED);
@@ -112,9 +111,7 @@ public class TrainingSessionServiceImpl implements TrainingSessionService {
         exercise.setTrainingSession(session);
         exercise.setCreatedAt(LocalDateTime.now());
         exercise.setNotes(dto.getNotes());
-        if (dto.getTypeOfExercise() != null) {
-            exercise.setTypeOfExercise(TypeOfExercise.valueOf(dto.getTypeOfExercise()));
-        }
+        exercise.setTypeOfExercise(dto.getTypeOfExercise());
         if (dto.getExerciseId() != null) {
             Optional<Exercise> catalogExercise = exerciseRepository.findById(dto.getExerciseId());
             catalogExercise.ifPresent(exercise::setExercise);

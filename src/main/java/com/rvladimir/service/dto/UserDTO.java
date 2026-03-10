@@ -6,6 +6,7 @@ import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -18,32 +19,38 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "User response payload")
 public class UserDTO {
-    @Schema(description = "The user ID", example = "1")
+    @Schema(description = "The user's unique identifier", example = "1",
+        accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @NotNull
-    @Schema(description = "The user name", example = "John")
+    @NotBlank
+    @Schema(description = "The user's first name", example = "John")
     private String name;
 
     @NotNull
-    @Schema(description = "The user lastname", example = "Doe")
+    @NotBlank
+    @Schema(description = "The user's last name", example = "Doe")
     private String lastname;
 
     @NotNull
-    @Schema(description = "The user nickname", example = "JohnD")
+    @NotBlank
+    @Schema(description = "The user's unique nickname", example = "JohnD")
     private String nickname;
 
     @NotNull
-    @Schema(description = "The user date of birth", example = "1990-01-01")
+    @Schema(description = "The user's date of birth", example = "1990-01-01")
     private LocalDate dateBirth;
 
     @NotNull
+    @NotBlank
     @Email
-    @Schema(description = "The user email", example = "john.doe@example.com")
+    @Schema(description = "The user's email address", example = "john.doe@example.com")
     private String email;
 
     @NotNull
-    @Schema(description = "The user role", example = "USER")
+    @Schema(description = "The user's role in the system", example = "USER")
     private User.Role role;
 }

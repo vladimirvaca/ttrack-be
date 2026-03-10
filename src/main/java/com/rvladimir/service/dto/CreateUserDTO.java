@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -18,23 +17,21 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Request payload for creating a new user")
 public class CreateUserDTO {
     @NotNull
-    @NotEmpty
     @NotBlank
-    @Schema(description = "The user's name", example = "Tony")
+    @Schema(description = "The user's first name", example = "Tony")
     private String name;
 
     @NotNull
-    @NotEmpty
     @NotBlank
-    @Schema(description = "The user's lastname", example = "Stark")
+    @Schema(description = "The user's last name", example = "Stark")
     private String lastname;
 
     @NotNull
-    @NotEmpty
     @NotBlank
-    @Schema(description = "The user's nickname", example = "IronMan")
+    @Schema(description = "The user's unique nickname", example = "IronMan")
     private String nickname;
 
     @NotNull
@@ -42,14 +39,13 @@ public class CreateUserDTO {
     private LocalDate dateBirth;
 
     @NotNull
+    @NotBlank
     @Email
-    @NotEmpty
-    @Schema(description = "The user's email", example = "tony.stark@gmail.com")
+    @Schema(description = "The user's email address", example = "tony.stark@gmail.com")
     private String email;
 
     @NotNull
-    @NotEmpty
     @NotBlank
-    @Schema(description = "The user's password", example = "12345")
+    @Schema(description = "The user's password (min 6 characters recommended)", example = "MyS3cretP@ss")
     private String password;
 }

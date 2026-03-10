@@ -62,9 +62,9 @@ class QuickStartIntervalResourceE2eTest implements TestPropertyProvider {
     private static final int TEST_SPRINTS = 10;
     private static final int TEST_REST_TIME = 60;
     private static final int DURATION_MINUTES = 3;
-    private static final String TYPE_HIIT = "HIIT";
-    private static final String TYPE_BOXING_BAG = "BOXING_BAG";
-    private static final String TYPE_SHADOW_BOXING = "SHADOW_BOXING";
+    private static final TypeOfExercise TYPE_HIIT = TypeOfExercise.HIIT;
+    private static final TypeOfExercise TYPE_BOXING_BAG = TypeOfExercise.BOXING_BAG;
+    private static final TypeOfExercise TYPE_SHADOW_BOXING = TypeOfExercise.SHADOW_BOXING;
     private static final String TEST_NOTES = "Focus on speed";
     private static final String QUICK_START_NAME_PREFIX = "Quick Start – ";
 
@@ -139,7 +139,8 @@ class QuickStartIntervalResourceE2eTest implements TestPropertyProvider {
         assertThat(response.body().getTrainingSession().getId()).isNotNull();
         assertThat(response.body().getTrainingSession().getUserId()).isEqualTo(user.getId());
         assertThat(response.body().getTrainingSession().getStatus()).isEqualTo(TrainingSession.Status.STARTED);
-        assertThat(response.body().getTrainingSession().getName()).isEqualTo(QUICK_START_NAME_PREFIX + TYPE_HIIT);
+        assertThat(response.body().getTrainingSession().getName())
+            .isEqualTo(QUICK_START_NAME_PREFIX + TYPE_HIIT.name());
         assertThat(response.body().getTrainingSession().getCreatedAt()).isNotNull();
 
         // Then — SessionExercise in response
@@ -175,7 +176,7 @@ class QuickStartIntervalResourceE2eTest implements TestPropertyProvider {
         // Then
         assertThat(response.status().getCode()).isEqualTo(HttpStatus.CREATED.getCode());
         assertThat(response.body().getTrainingSession().getName())
-            .isEqualTo(QUICK_START_NAME_PREFIX + TYPE_BOXING_BAG);
+            .isEqualTo(QUICK_START_NAME_PREFIX + TYPE_BOXING_BAG.name());
         assertThat(response.body().getSessionExercise().getTypeOfExercise()).isEqualTo(TYPE_BOXING_BAG);
         assertThat(response.body().getSessionExercise().getNotes()).isEqualTo(TEST_NOTES);
 

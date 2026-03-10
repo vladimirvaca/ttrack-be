@@ -1,5 +1,7 @@
 package com.rvladimir.service.impl;
 
+import com.rvladimir.domain.SessionExercise;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.service.dto.CreateSessionExerciseDTO;
 import com.rvladimir.service.dto.SessionExerciseDTO;
 
@@ -24,13 +26,14 @@ public final class SessionExerciseTestHelper {
     public static final double WEIGHT = 50.0;
     public static final double DISTANCE = 100.0;
     public static final int REST_TIME = 60;
-    public static final String STATUS_STARTED = "STARTED";
+    public static final SessionExercise.Status STATUS_STARTED = SessionExercise.Status.STARTED;
     public static final int EXERCISE_ORDER = 1;
     public static final long EXERCISE_ID = 1L;
     public static final long TRAINING_SESSION_ID = 2L;
     public static final long SESSION_EXERCISE_ID = 1L;
-    public static final String UNIT_KILOMETERS = "KILOMETERS";
-    public static final String TYPE_OF_EXERCISE = "BOXING_BAG";
+    public static final SessionExercise.UnitOfMeasurement UNIT_KILOMETERS =
+        SessionExercise.UnitOfMeasurement.KILOMETERS;
+    public static final TypeOfExercise TYPE_OF_EXERCISE = TypeOfExercise.BOXING_BAG;
     public static final String NOTES = "Test notes";
 
     /**
@@ -47,11 +50,11 @@ public final class SessionExerciseTestHelper {
         LocalDateTime startTime,
         LocalDateTime endTime,
         int restTime,
-        String status,
+        SessionExercise.Status status,
         int exerciseOrder,
         long exerciseId,
-        String unit,
-        String typeOfExercise,
+        SessionExercise.UnitOfMeasurement unit,
+        TypeOfExercise typeOfExercise,
         String notes
     ) {
         return new CreateSessionExerciseDTO(
@@ -84,13 +87,13 @@ public final class SessionExerciseTestHelper {
         LocalDateTime startTime,
         LocalDateTime endTime,
         int restTime,
-        String status,
+        SessionExercise.Status status,
         int exerciseOrder,
         long exerciseId,
         long trainingSessionId,
         LocalDateTime createdAt,
-        String unit,
-        String typeOfExercise,
+        SessionExercise.UnitOfMeasurement unit,
+        TypeOfExercise typeOfExercise,
         String notes
     ) {
         return new SessionExerciseDTO(

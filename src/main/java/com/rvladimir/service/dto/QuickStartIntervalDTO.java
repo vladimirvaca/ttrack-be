@@ -1,9 +1,13 @@
 package com.rvladimir.service.dto;
 
+import com.rvladimir.domain.TypeOfExercise;
+
 import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalTime;
 
@@ -21,9 +25,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Request payload for quickly starting an interval training session")
 public class QuickStartIntervalDTO {
 
     @NotNull
+    @Positive
     @Schema(description = "The ID of the user starting the interval training", example = "1")
     private Long userId;
 
@@ -31,21 +37,25 @@ public class QuickStartIntervalDTO {
         description = "Type of exercise (e.g. HIIT, BOXING_BAG, SHADOW_BOXING, CARDIO)",
         example = "HIIT"
     )
-    private String typeOfExercise;
+    private TypeOfExercise typeOfExercise;
 
+    @Positive
     @Schema(description = "Number of rounds", example = "5")
     private Integer rounds;
 
+    @Positive
     @Schema(description = "Number of sprints", example = "10")
     private Integer sprints;
 
-    @Schema(description = "Duration per round or exercise (e.g. 00:03:00 for 3 minutes)", example = "00:03:00")
+    @Schema(description = "Duration per round or exercise (HH:mm:ss)", example = "00:03:00")
     private LocalTime duration;
 
+    @PositiveOrZero
     @Schema(description = "Rest time in seconds between rounds", example = "60")
     private Integer restTime;
 
-    @Schema(description = "Optional ID of the exercise from the catalog")
+    @Positive
+    @Schema(description = "Optional ID of the exercise from the catalog", example = "10")
     private Long exerciseId;
 
     @Schema(description = "Optional free-text notes about this interval session", example = "Focus on speed")

@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.rvladimir.domain.SessionExercise;
 import com.rvladimir.domain.TrainingSession;
+import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.service.TrainingSessionService;
 import com.rvladimir.service.dto.CreateTrainingSessionDTO;
 import com.rvladimir.service.dto.QuickStartIntervalDTO;
@@ -58,9 +60,9 @@ class TrainingSessionResourceTest {
     private static final int TEST_ROUNDS = 5;
     private static final int TEST_SPRINTS = 10;
     private static final int TEST_REST_TIME = 60;
-    private static final String TYPE_HIIT = "HIIT";
-    private static final String TYPE_BOXING_BAG = "BOXING_BAG";
-    private static final String STATUS_STARTED = "STARTED";
+    private static final TypeOfExercise TYPE_HIIT = TypeOfExercise.HIIT;
+    private static final TypeOfExercise TYPE_BOXING_BAG = TypeOfExercise.BOXING_BAG;
+    private static final SessionExercise.Status STATUS_STARTED = SessionExercise.Status.STARTED;
 
     @Inject
     @Client("/")

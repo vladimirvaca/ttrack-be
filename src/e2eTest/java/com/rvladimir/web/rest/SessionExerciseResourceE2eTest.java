@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.rvladimir.domain.Exercise;
+import com.rvladimir.domain.SessionExercise;
 import com.rvladimir.domain.TrainingSession;
 import com.rvladimir.domain.TypeOfExercise;
 import com.rvladimir.domain.User;
@@ -67,16 +68,17 @@ class SessionExerciseResourceE2eTest implements TestPropertyProvider {
     private static final double TEST_WEIGHT_2 = 60.0;
     private static final int TEST_SETS_2 = 3;
     private static final int TEST_REPS_2 = 15;
-    private static final String STATUS_STARTED = "STARTED";
-    private static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
-    private static final String UNIT_KILOMETERS = "KILOMETERS";
-    private static final String UNIT_MILES = "MILES";
+    private static final SessionExercise.Status STATUS_STARTED = SessionExercise.Status.STARTED;
+    private static final SessionExercise.Status STATUS_IN_PROGRESS = SessionExercise.Status.IN_PROGRESS;
+    private static final SessionExercise.UnitOfMeasurement UNIT_KILOMETERS =
+        SessionExercise.UnitOfMeasurement.KILOMETERS;
+    private static final SessionExercise.UnitOfMeasurement UNIT_MILES = SessionExercise.UnitOfMeasurement.MILES;
     private static final int TEST_TIME_MIN_1 = 30;
     private static final int TEST_TIME_MIN_2 = 45;
     private static final long NON_EXISTING_SESSION_ID = 999999L;
-    private static final String TYPE_BOXING_BAG = "BOXING_BAG";
-    private static final String TYPE_SHADOW_BOXING = "SHADOW_BOXING";
-    private static final String TYPE_STRENGTH = "STRENGTH";
+    private static final TypeOfExercise TYPE_BOXING_BAG = TypeOfExercise.BOXING_BAG;
+    private static final TypeOfExercise TYPE_SHADOW_BOXING = TypeOfExercise.SHADOW_BOXING;
+    private static final TypeOfExercise TYPE_STRENGTH = TypeOfExercise.STRENGTH;
     private static final String TEST_NOTES = "Felt strong, good session";
 
     @Container
