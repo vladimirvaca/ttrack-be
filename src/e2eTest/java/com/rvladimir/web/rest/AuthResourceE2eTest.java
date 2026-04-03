@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.rvladimir.repository.UserRepository;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.MobileLoginResponseDTO;
 import com.rvladimir.service.dto.RefreshTokenRequestDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 import com.rvladimir.test.PostgresTestContainer;
@@ -154,8 +155,8 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        HttpResponse<TokenResponseDTO> response =
-            client.toBlocking().exchange(request, TokenResponseDTO.class);
+        HttpResponse<MobileLoginResponseDTO> response =
+            client.toBlocking().exchange(request, MobileLoginResponseDTO.class);
 
         // Then
         assertThat(response.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
@@ -163,6 +164,10 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         assertThat(response.body().getAccessToken()).isNotBlank();
         assertThat(response.body().getTokenType()).isEqualTo(BEARER_TOKEN_TYPE);
         assertThat(response.body().getRefreshToken()).isNotBlank();
+        assertThat(response.body().getUserId()).isNotNull();
+        assertThat(response.body().getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(response.body().getName()).isEqualTo("John");
+        assertThat(response.body().getLastname()).isEqualTo("Doe");
     }
 
     @Test
@@ -174,8 +179,8 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        HttpResponse<TokenResponseDTO> response =
-            client.toBlocking().exchange(request, TokenResponseDTO.class);
+        HttpResponse<MobileLoginResponseDTO> response =
+            client.toBlocking().exchange(request, MobileLoginResponseDTO.class);
 
         // Then
         assertThat(response.getCookies().get(COOKIE_NAME)).isNull();
@@ -190,8 +195,8 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When - obtain token
         HttpRequest<LoginDTO> loginRequest = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        HttpResponse<TokenResponseDTO> loginResponse =
-            client.toBlocking().exchange(loginRequest, TokenResponseDTO.class);
+        HttpResponse<MobileLoginResponseDTO> loginResponse =
+            client.toBlocking().exchange(loginRequest, MobileLoginResponseDTO.class);
 
         assertThat(loginResponse.body()).isNotNull();
         String token = loginResponse.body().getAccessToken();
@@ -213,7 +218,7 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
@@ -229,7 +234,7 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
@@ -245,7 +250,7 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
@@ -261,7 +266,7 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
@@ -381,8 +386,8 @@ class AuthResourceE2eTest implements TestPropertyProvider {
         LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
         HttpRequest<LoginDTO> loginRequest = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        HttpResponse<TokenResponseDTO> loginResponse =
-            client.toBlocking().exchange(loginRequest, TokenResponseDTO.class);
+        HttpResponse<MobileLoginResponseDTO> loginResponse =
+            client.toBlocking().exchange(loginRequest, MobileLoginResponseDTO.class);
         assertThat(loginResponse.body()).isNotNull();
         return loginResponse.body().getRefreshToken();
     }

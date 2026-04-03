@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.rvladimir.service.AuthService;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.MobileLoginResponseDTO;
 import com.rvladimir.service.dto.RefreshTokenRequestDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 
@@ -41,6 +42,9 @@ class AuthResourceTest {
     private static final String TOKEN_VALUE = "jwt-token";
     private static final String REFRESH_TOKEN_VALUE = "refresh-jwt-token";
     private static final String BEARER_TOKEN_TYPE = "Bearer";
+    private static final Long TEST_USER_ID = 1L;
+    private static final String TEST_USER_NAME = "John";
+    private static final String TEST_USER_LASTNAME = "Doe";
 
     @Inject
     @Client("/")
@@ -91,14 +95,16 @@ class AuthResourceTest {
     void testMobileLoginSuccessReturnsToken() {
         // Given
         LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
-        TokenResponseDTO tokenResponse = new TokenResponseDTO(TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE);
-        when(authService.mobileLogin(any(LoginDTO.class))).thenReturn(tokenResponse);
+        MobileLoginResponseDTO loginResponse = new MobileLoginResponseDTO(
+            TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE,
+            TEST_USER_ID, TEST_EMAIL, TEST_USER_NAME, TEST_USER_LASTNAME);
+        when(authService.mobileLogin(any(LoginDTO.class))).thenReturn(loginResponse);
 
         // When
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        HttpResponse<TokenResponseDTO> response =
-            client.toBlocking().exchange(request, TokenResponseDTO.class);
+        HttpResponse<MobileLoginResponseDTO> response =
+            client.toBlocking().exchange(request, MobileLoginResponseDTO.class);
 
         // Then
         assertThat(response.status().getCode()).isEqualTo(HttpStatus.OK.getCode());
@@ -106,20 +112,26 @@ class AuthResourceTest {
         assertThat(response.body().getAccessToken()).isEqualTo(TOKEN_VALUE);
         assertThat(response.body().getTokenType()).isEqualTo(BEARER_TOKEN_TYPE);
         assertThat(response.body().getRefreshToken()).isEqualTo(REFRESH_TOKEN_VALUE);
+        assertThat(response.body().getUserId()).isEqualTo(TEST_USER_ID);
+        assertThat(response.body().getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(response.body().getName()).isEqualTo(TEST_USER_NAME);
+        assertThat(response.body().getLastname()).isEqualTo(TEST_USER_LASTNAME);
     }
 
     @Test
     void testMobileLoginDoesNotSetCookie() {
         // Given
         LoginDTO loginDTO = new LoginDTO(TEST_EMAIL, TEST_PASSWORD);
-        TokenResponseDTO tokenResponse = new TokenResponseDTO(TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE);
-        when(authService.mobileLogin(any(LoginDTO.class))).thenReturn(tokenResponse);
+        MobileLoginResponseDTO loginResponse = new MobileLoginResponseDTO(
+            TOKEN_VALUE, BEARER_TOKEN_TYPE, REFRESH_TOKEN_VALUE,
+            TEST_USER_ID, TEST_EMAIL, TEST_USER_NAME, TEST_USER_LASTNAME);
+        when(authService.mobileLogin(any(LoginDTO.class))).thenReturn(loginResponse);
 
         // When
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        HttpResponse<TokenResponseDTO> response =
-            client.toBlocking().exchange(request, TokenResponseDTO.class);
+        HttpResponse<MobileLoginResponseDTO> response =
+            client.toBlocking().exchange(request, MobileLoginResponseDTO.class);
 
         // Then
         assertThat(response.getCookies().get(COOKIE_NAME)).isNull();
@@ -136,7 +148,7 @@ class AuthResourceTest {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
@@ -152,7 +164,7 @@ class AuthResourceTest {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;
@@ -168,7 +180,7 @@ class AuthResourceTest {
         // When & Then
         HttpRequest<LoginDTO> request = HttpRequest.POST(ENDPOINT_AUTH_MOBILE_LOGIN, loginDTO)
             .accept(MediaType.APPLICATION_JSON_TYPE);
-        assertThatThrownBy(() -> client.toBlocking().exchange(request, TokenResponseDTO.class))
+        assertThatThrownBy(() -> client.toBlocking().exchange(request, MobileLoginResponseDTO.class))
             .isInstanceOf(HttpClientResponseException.class)
             .satisfies(ex -> {
                 HttpClientResponseException httpEx = (HttpClientResponseException) ex;

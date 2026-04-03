@@ -2,6 +2,7 @@ package com.rvladimir.web.rest;
 
 import com.rvladimir.service.AuthService;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.MobileLoginResponseDTO;
 import com.rvladimir.service.dto.RefreshTokenRequestDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 
@@ -62,27 +63,28 @@ public class AuthResource {
 
     @ApiResponse(
         responseCode = "200",
-        description = "Successful login. JWT is returned in the response body."
+        description = "Successful login. JWT tokens and basic user information are returned in the response body."
     )
     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials.")
     @Operation(
         summary = "Mobile User Login",
-        description = "Authenticates a user and returns a JWT access token and a refresh token in the response body."
+        description = "Authenticates a user and returns a JWT access token, a refresh token, " +
+            "and the user's id, email, name and lastname in the response body."
     )
     @Post(uri = "/mobile-login", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
-    public HttpResponse<TokenResponseDTO> mobileLogin(@Body @Valid LoginDTO loginDTO) {
+    public HttpResponse<MobileLoginResponseDTO> mobileLogin(@Body @Valid LoginDTO loginDTO) {
         log.info("Mobile login attempt for user: {}", loginDTO.getEmail());
 
-        TokenResponseDTO tokenResponse;
+        MobileLoginResponseDTO loginResponse;
         try {
-            tokenResponse = authService.mobileLogin(loginDTO);
+            loginResponse = authService.mobileLogin(loginDTO);
         } catch (Exception ex) {
             log.warn("Mobile login failed for user: {} - {}", loginDTO.getEmail(), ex.getMessage());
             return HttpResponse.unauthorized();
         }
 
         log.info("Mobile login successful for user: {}. JWT token returned.", loginDTO.getEmail());
-        return HttpResponse.ok(tokenResponse);
+        return HttpResponse.ok(loginResponse);
     }
 
     @ApiResponse(

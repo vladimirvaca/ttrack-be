@@ -1,6 +1,7 @@
 package com.rvladimir.service;
 
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.MobileLoginResponseDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 
 public interface AuthService {
@@ -8,12 +9,13 @@ public interface AuthService {
     String login(LoginDTO loginDTO);
 
     /**
-     * Authenticates a user for mobile clients, returning both an access token and a refresh token.
+     * Authenticates a user for mobile clients, returning both tokens and basic user information.
      *
      * @param loginDTO the login credentials
-     * @return a {@link TokenResponseDTO} containing the access token, token type, and refresh token
+     * @return a {@link MobileLoginResponseDTO} containing the access token, token type, refresh token,
+     *         and the authenticated user's id, email, name and lastname
      */
-    TokenResponseDTO mobileLogin(LoginDTO loginDTO);
+    MobileLoginResponseDTO mobileLogin(LoginDTO loginDTO);
 
     /**
      * Validates the given refresh token and returns a new access token along with a rotated refresh token.

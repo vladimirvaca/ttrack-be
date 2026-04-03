@@ -4,6 +4,7 @@ import com.rvladimir.domain.User;
 import com.rvladimir.repository.UserRepository;
 import com.rvladimir.service.AuthService;
 import com.rvladimir.service.dto.LoginDTO;
+import com.rvladimir.service.dto.MobileLoginResponseDTO;
 import com.rvladimir.service.dto.TokenResponseDTO;
 
 import io.micronaut.http.HttpStatus;
@@ -71,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenResponseDTO mobileLogin(LoginDTO loginDTO) {
+    public MobileLoginResponseDTO mobileLogin(LoginDTO loginDTO) {
         String email = normalizeEmail(loginDTO.getEmail());
         if (email == null || email.isBlank()) {
             throw new HttpStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MSG);
@@ -97,7 +98,15 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = refreshTokenGenerator.generate(authentication, user.getEmail())
             .orElseThrow(() -> new HttpStatusException(HttpStatus.INTERNAL_SERVER_ERROR, TOKEN_GENERATION_FAILED_MSG));
 
-        return new TokenResponseDTO(accessToken, BEARER_TOKEN_TYPE, refreshToken);
+        return new MobileLoginResponseDTO(
+            accessToken,
+            BEARER_TOKEN_TYPE,
+            refreshToken,
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getLastname()
+        );
     }
 
     @Override
